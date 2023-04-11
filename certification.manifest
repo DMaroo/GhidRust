@@ -1,0 +1,6 @@
+##VERSION: 1.0
+##MODULE IP: MIT
+Module.manifest||GHIDRA||||END|
+extension.properties||GHIDRA||||END|
+src/main/help/help/TOC_Source.xml||GHIDRA||||END|
+src/main/help/help/topics/GhidRust/help.html||GHIDRA||||END|

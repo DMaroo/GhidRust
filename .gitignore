@@ -1,0 +1,21 @@
+# temp files
+tmp/
+
+# editor config files
+.idea/
+.vscode/
+.settings/
+
+# build directories
+bin/
+build/
+dist/
+
+# gradle files
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+
+# misc
+.DS_Store
