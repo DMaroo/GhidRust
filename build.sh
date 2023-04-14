@@ -67,6 +67,8 @@ then
     exit 1
 fi
 
+rm dist/* 2> /dev/null
+
 status "Building GhidRust"
 
 gradle -PGHIDRA_INSTALL_DIR="$GHIDRA"
@@ -85,6 +87,7 @@ fi
 
 status "Installing GhidRust"
 
+sudo rm -f "$GHIDRA"/*GhidRust* 2> /dev/null
 sudo cp dist/* "$GHIDRA"/Extensions/Ghidra
 
 if [[ $? -ne 0 ]]; then
