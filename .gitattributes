@@ -1,0 +1,12 @@
+# Auto detect text files and perform LF normalization
+* text=auto eol=lf
+
+# binary files which should not be modified
+*.bmp binary
+*.dds binary
+*.gif binary
+*.jpg binary
+*.pbm binary
+*.pgm binary
+*.png binary
+*.ppm binary
