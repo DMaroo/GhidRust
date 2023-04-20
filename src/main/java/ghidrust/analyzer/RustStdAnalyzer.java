@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ghidrust;
+package ghidrust.analyzer;
 
 import generic.jar.ResourceFile;
 import ghidra.app.services.AbstractAnalyzer;
@@ -36,7 +36,7 @@ import java.io.InputStream;
 public class RustStdAnalyzer extends AbstractAnalyzer {
     private static final String filePath = "/home/dhruv/Education/CS4900/Work/GhidRust/tmp/logs";
     private static BufferedWriter writer;
-    private final byte[][] rust_artifacts = {
+    private static final byte[][] rust_artifacts = {
             "run with `RUST_BACKTRACE=1` environment variable".getBytes(),
             "called `Option::unwrap()` on a `None` value".getBytes(),
             "called `Result::unwrap()` on an `Err` value".getBytes()
@@ -134,6 +134,47 @@ public class RustStdAnalyzer extends AbstractAnalyzer {
 
     @Override
     public boolean canAnalyze(Program program) {
+        return isRustBinary(program);
+    }
+
+    @Override
+    public boolean added(Program program, AddressSetView set, TaskMonitor monitor, MessageLog log)
+            throws CancelledException {
+        FidFileManager ffm = FidFileManager.getInstance();
+        if (ffm == null) {
+            return false;
+        }
+
+        ResourceFile data_dir;
+        try {
+            data_dir = Application.getModuleDataSubDirectory("");
+        } catch (IOException exc) {
+            log.appendException(exc);
+            return false;
+        }
+
+        ResourceFile[] libs = data_dir.listFiles();
+        for (ResourceFile lib : libs) {
+            monitor.checkCanceled();
+            ffm.addUserFidFile(lib.getFile(true));
+        }
+
+        return true;
+    }
+
+    @Override
+    public void analysisEnded(Program program) {
+        super.analysisEnded(program);
+
+        try {
+            writer.close();
+        } catch (IOException exc) {
+            // pass
+        }
+    }
+
+    /* For exposing the Rust checking code */
+    public static boolean isRustBinary(Program program) {
         /*
          * Taken from
          * https://github.com/mandiant/capa-rules/blob/master/compiler/rust/compiled-
@@ -185,41 +226,5 @@ public class RustStdAnalyzer extends AbstractAnalyzer {
         }
 
         return false;
-    }
-
-    @Override
-    public boolean added(Program program, AddressSetView set, TaskMonitor monitor, MessageLog log)
-            throws CancelledException {
-        FidFileManager ffm = FidFileManager.getInstance();
-        if (ffm == null) {
-            return false;
-        }
-
-        ResourceFile data_dir;
-        try {
-            data_dir = Application.getModuleDataSubDirectory("");
-        } catch (IOException exc) {
-            log.appendException(exc);
-            return false;
-        }
-
-        ResourceFile[] libs = data_dir.listFiles();
-        for (ResourceFile lib : libs) {
-            monitor.checkCanceled();
-            ffm.addUserFidFile(lib.getFile(true));
-        }
-
-        return true;
-    }
-
-    @Override
-    public void analysisEnded(Program program) {
-        super.analysisEnded(program);
-
-        try {
-            writer.close();
-        } catch (IOException exc) {
-            // pass
-        }
     }
 }
