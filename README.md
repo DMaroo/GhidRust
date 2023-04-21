@@ -1,4 +1,8 @@
-# GhidRust: Rust binary analysis extension
+<p align="center">
+  <img width="180" src="./images/ghidrust.png" alt="GhidRust">
+  <h1 align="center">GhidRust</h1>
+  <p align="center">GhidRust: Rust binary analysis extension</p>
+</p>
 
 ## Building
 
