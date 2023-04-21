@@ -33,7 +33,7 @@ import docking.action.MenuData;
 
 //@formatter:off
 @PluginInfo(
-	status = PluginStatus.RELEASED,
+	status = PluginStatus.STABLE,
 	packageName = "HELLO",
 	category = PluginCategoryNames.DECOMPILER,
 	shortDescription = "Rust Decompiler",

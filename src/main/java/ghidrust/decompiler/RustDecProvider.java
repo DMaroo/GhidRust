@@ -14,6 +14,8 @@ import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.JButton;
 import javax.swing.Box;
+import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
@@ -27,8 +29,6 @@ public class RustDecProvider extends ComponentProvider {
     private JPanel panel;
     private JTextArea code_area;
     private JLabel func_title;
-    private JToolBar toolbar;
-    private JButton reload;
 
     private Program prog;
     private Address addr;
@@ -56,7 +56,7 @@ public class RustDecProvider extends ComponentProvider {
         panel = new JPanel(new BorderLayout());
 
         func_title = new JLabel(EMPTY_LABEL);
-        reload = new JButton(ResourceManager.loadImage("images/reload.png"));
+        JButton reload = new JButton(ResourceManager.loadImage("images/reload.png"));
 
         reload.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -64,15 +64,20 @@ public class RustDecProvider extends ComponentProvider {
             }
         });
 
-        toolbar = new JToolBar("GhidRust", JToolBar.HORIZONTAL);
+        JToolBar toolbar = new JToolBar("GhidRust", JToolBar.HORIZONTAL);
+        toolbar.setFloatable(false);
         toolbar.add(func_title);
         toolbar.add(Box.createHorizontalGlue());
         toolbar.add(reload);
 
         code_area = new JTextArea();
+        code_area.setEditable(false);
+
+        JScrollPane scroll = new JScrollPane(code_area);
+        scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         panel.add(toolbar, BorderLayout.PAGE_START);
-        panel.add(code_area);
+        panel.add(scroll);
     }
 
     public void activateProvider() {

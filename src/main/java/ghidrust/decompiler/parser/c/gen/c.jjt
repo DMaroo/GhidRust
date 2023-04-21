@@ -1,0 +1,477 @@
+/*
+C grammar and JJTree definition for use with JavaCC
+Contributed by Doug South (dsouth@squirrel.com.au) 21/3/97
+From: https://github.com/javacc/javacc/blob/master/grammars/CParser.jj
+*/
+
+/* The following code has been significantly modified so as to make it compatible with Ghidra's decompiled output
+* and for the Rust transpilation
+*/
+
+options {
+	MULTI = true;
+	VISITOR = true;
+}
+
+PARSER_BEGIN(CParser)
+
+import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import ghidrust.decompiler.parser.c.CVisitor;
+
+public class CParser {
+	private static CParser c_parser;
+	
+	// Run the parser
+	public static String transpile(String c_code) {
+		InputStream stream = new ByteArrayInputStream(c_code.getBytes(StandardCharsets.UTF_8));
+		c_parser = new CParser(stream);
+		
+		try {
+			return parse();
+		} catch (ParseException e) {
+			System.out.println("Rust transpiler: Encountered errors during parsing.");
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public static String parse() throws ParseException {
+		CParserVisitor visitor = new CVisitor();
+        return (String) c_parser.FunctionDefinition().jjtAccept(visitor, null);
+	}
+}
+
+PARSER_END(CParser)
+
+SKIP : {
+	" "
+	|  "\t"
+	|  "\n"
+	|  "\r"
+	|  <"//" (~["\n","\r"])* ("\n" | "\r" | "\r\n")>
+	|  <"/*" (~["*"])* "*" ("*" | ~["*","/"] (~["*"])* "*")* "/">
+	| "#" : PREPROCESSOR_OUTPUT
+}
+
+<PREPROCESSOR_OUTPUT> SKIP:
+{
+	"\n" : DEFAULT
+}
+
+<PREPROCESSOR_OUTPUT> MORE:
+{
+	"\\\n"
+	|
+	"\\\r\n"
+	|
+	< ~[] >
+}
+
+
+TOKEN : {
+	<INTEGER_LITERAL: <DECIMAL_LITERAL> (["l","L"])? | <HEX_LITERAL> (["l","L"])? | <OCTAL_LITERAL> (["l","L"])?>
+	|  <#DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])*>
+	|  <#HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+>
+	|  <#OCTAL_LITERAL: "0" (["0"-"7"])*>
+	|  <FLOATING_POINT_LITERAL: (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])? | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])? | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]>
+	|  <#EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+>
+	|  <CHARACTER_LITERAL: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"])) "\'">
+	|  <STRING_LITERAL: "\"" ( ~["\"","\\","\n","\r"] | "\\" ( ["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])?  | ["0"-"3"] ["0"-"7"] ["0"-"7"] | ( ["\n","\r"] | "\r\n")))* "\"">
+	| <UNDEFINED_TYPE: "undefined" (<DECIMAL_LITERAL>)?> // Ghidra specific unknown type
+}
+
+TOKEN : {
+	<CONTINUE: "continue"> |
+	<VOLATILE: "volatile"> |
+	<REGISTER: "register"> |
+	<UNSIGNED: "unsigned"> |
+	<TYPEDEF: "typedef"> |
+	<DFLT: "default"> |
+	<DOUBLE: "double"> |
+	<SIZEOF: "sizeof"> |
+	<SWITCH: "switch"> |
+	<RETURN: "return"> |
+	<EXTERN: "extern"> |
+	<STRUCT: "struct"> |
+	<STATIC: "static"> |
+	<SIGNED: "signed"> |
+	<WHILE: "while"> |
+	<BREAK: "break"> |
+	<UNION: "union"> |
+	<CONST: "const"> |
+	<FLOAT: "float"> |
+	<SHORT: "short"> |
+	<ELSE: "else"> |
+	<CASE: "case"> |
+	<LONG: "long"> |
+	<ENUM: "enum"> |
+	<AUTO: "auto"> |
+	<VOID: "void"> |
+	<CHAR: "char"> |
+	<GOTO: "goto"> |
+	<FOR: "for"> |
+	<INT: "int"> |
+	<IF: "if"> |
+	<DO: "do"> |
+	<CODE: "code"> // code ptr, Ghidra specific
+}
+
+TOKEN : {
+	<IDENTIFIER: <LETTER> (<LETTER> | <DIGIT>)*>
+	|  <#LETTER: ["$","A"-"Z","_","a"-"z"]>
+	|  <#DIGIT: ["0"-"9"]>
+}
+
+
+SimpleNode FunctionDefinition() : {}
+{
+	[LOOKAHEAD(DeclarationSpecifiers()) DeclarationSpecifiers()] Declarator()
+	CompoundStatement()
+	{
+		return jjtThis;
+	}
+}
+
+void Declaration() : {}
+{
+	DeclarationSpecifiers() [ InitDeclaratorList() ] ";"
+}
+
+void DeclarationList() : {}
+{
+	( LOOKAHEAD(Declaration()) Declaration() )+
+}
+
+void DeclarationSpecifiers() : {}
+{
+	StorageClassSpecifier() [ LOOKAHEAD(DeclarationSpecifiers())
+	DeclarationSpecifiers() ] |
+	TypeSpecifier()  [ LOOKAHEAD(DeclarationSpecifiers())
+	DeclarationSpecifiers() ] |
+	TypeQualifier() [ LOOKAHEAD(DeclarationSpecifiers())
+	DeclarationSpecifiers() ]
+}
+
+void StorageClassSpecifier() #GhostStringToken :
+{
+	Token t;
+}
+{
+	( t = <AUTO> | t = <REGISTER> | t = <STATIC> | t = <EXTERN> | t = <TYPEDEF> )
+	{
+		jjtThis.setValue(t.image);
+	}
+}
+
+void TypeSpecifier() #TypeStringToken :
+{
+	Token t;
+}
+{
+	( t = <VOID> | t = <CHAR> | t = <SHORT> | t = <INT> | t = <LONG> | t = <FLOAT> | t = <DOUBLE> | t = <SIGNED> |
+	t = <UNSIGNED> | t = <CODE> | t = <UNDEFINED_TYPE> )
+	{
+		jjtThis.setValue(t.image);
+	}
+}
+
+void TypeQualifier() #StringToken :
+{
+	Token t;
+}
+{
+	( t = <CONST> | t = <VOLATILE> )
+	{
+		jjtThis.setValue(t.image);
+	}
+}
+
+void InitDeclaratorList() : {}
+{
+	InitDeclarator() ("," InitDeclarator())*
+}
+
+void InitDeclarator() : {}
+{
+	Declarator() [ "=" Initializer() ]
+}
+
+void SpecifierQualifierList() : {}
+{
+	TypeSpecifier() [ LOOKAHEAD(SpecifierQualifierList())
+	SpecifierQualifierList() ]|
+	TypeQualifier() [ LOOKAHEAD(SpecifierQualifierList())
+	SpecifierQualifierList() ]
+}
+
+void Declarator() : {}
+{
+	[ Pointer() ] DirectDeclarator()
+}
+
+void DirectDeclarator() : {}
+{
+	( Identifier() | "(" Declarator() ")" )
+	( "[" [ ConstantExpression() ] "]" |
+	LOOKAHEAD(3) "(" ParameterTypeList() ")" |
+	"(" [ IdentifierList() ] ")" )*
+}
+
+void Pointer() : {}
+{
+	"*" [ TypeQualifierList() ] [ Pointer() ]
+}
+
+void TypeQualifierList() : {}
+{
+	(TypeQualifier())+
+}
+
+void ParameterTypeList() : {}
+{
+	ParameterList() ["," "..." ]
+}
+
+void ParameterList() : {}
+{
+	ParameterDeclaration() (LOOKAHEAD(2) "," ParameterDeclaration())*
+}
+
+void ParameterDeclaration() : {}
+{
+	DeclarationSpecifiers() ( LOOKAHEAD(Declarator()) Declarator() | [ AbstractDeclarator() ] )
+}
+
+void IdentifierList() : {}
+{
+	Identifier() ("," Identifier())*
+}
+
+void Initializer() : {}
+{
+	( AssignmentExpression() |
+	"{" InitializerList() [","] "}" )
+}
+
+void InitializerList() : {}
+{
+	Initializer() (LOOKAHEAD(2) "," Initializer())*
+}
+
+void TypeName() : {}
+{
+	SpecifierQualifierList() [ AbstractDeclarator() ]
+	
+}
+
+void AbstractDeclarator() : {}
+{
+	( LOOKAHEAD(3) Pointer() |
+	[Pointer()] DirectAbstractDeclarator() )
+}
+
+void DirectAbstractDeclarator() : {}
+{
+	( LOOKAHEAD(2) "(" AbstractDeclarator() ")" |
+	"[" [ConstantExpression()] "]" |
+	"(" [ParameterTypeList()] ")" )
+	
+	( "[" [ ConstantExpression() ] "]" | "(" [ ParameterTypeList() ] ")" )*
+}
+
+void Statement() : {}
+{
+	( LOOKAHEAD(2) LabeledStatement() |
+	ExpressionStatement() |
+	CompoundStatement() |
+	SelectionStatement() |
+	IterationStatement() |
+	JumpStatement() )
+}
+
+void LabeledStatement() : {}
+{
+	( Identifier() ":" Statement() |
+	<CASE> ConstantExpression() ":" Statement() |
+	<DFLT> ":" Statement() )
+}
+
+void ExpressionStatement() : {}
+{
+	[ Expression() ] ";"
+}
+
+void CompoundStatement() : {}
+{
+	"{" [ LOOKAHEAD(DeclarationList()) DeclarationList() ]
+	[ StatementList() ]
+	"}"
+}
+
+void StatementList() : {}
+{
+	(Statement())+
+}
+
+void SelectionStatement() : {}
+{
+	( <IF> "(" Expression() ")" Statement() [ LOOKAHEAD(2) <ELSE> Statement() ] |
+	<SWITCH> "(" Expression() ")" Statement() )
+}
+
+void IterationStatement() : {}
+{
+	( <WHILE> "(" Expression() ")" Statement() |
+	<DO> Statement() <WHILE> "(" Expression() ")" ";" |
+	<FOR> "(" [ Expression() ] ";" [ Expression() ] ";" [ Expression() ] ")" Statement() )
+}
+
+void JumpStatement() : {}
+{
+	( <GOTO> Identifier() ";" |
+	<CONTINUE> ";" |
+	<BREAK> ";" |
+	<RETURN> [ Expression() ] ";" )
+}
+
+void Expression() : {}
+{
+	AssignmentExpression() ( "," AssignmentExpression() )* | DeclarationSpecifiers() InitDeclaratorList()
+}
+
+void AssignmentExpression() : {}
+{
+	LOOKAHEAD(UnaryExpression() AssignmentOperator()) UnaryExpression() AssignmentOperator() AssignmentExpression() |
+	LOOKAHEAD(3) ConditionalExpression()
+}
+
+void AssignmentOperator() : {}
+{
+	( "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^=" | "|=" )
+}
+
+void ConditionalExpression() : {}
+{
+	LogicalORExpression() [ "?" Expression() ":" ConditionalExpression() ]
+}
+
+void ConstantExpression() : {}
+{
+	ConditionalExpression()
+}
+
+void LogicalORExpression() : {}
+{
+	LogicalANDExpression() [ "||" LogicalORExpression() ]
+}
+
+void LogicalANDExpression() : {}
+{
+	InclusiveORExpression() [ "&&" LogicalANDExpression() ]
+}
+
+void InclusiveORExpression() : {}
+{
+	ExclusiveORExpression() [ "|" InclusiveORExpression() ]
+}
+
+void ExclusiveORExpression() : {}
+{
+	ANDExpression() [ "^" ExclusiveORExpression() ]
+}
+
+void ANDExpression() : {}
+{
+	EqualityExpression() [ "&" ANDExpression() ]
+}
+
+void EqualityExpression() : {}
+{
+	RelationalExpression() [ ( "==" | "!=" ) EqualityExpression() ]
+}
+
+void RelationalExpression() : {}
+{
+	ShiftExpression() [ ( "<" | ">" | "<=" | ">=" ) RelationalExpression() ]
+}
+
+void ShiftExpression() : {}
+{
+	AdditiveExpression() [ ( "<<" | ">>" ) ShiftExpression() ]
+}
+
+void AdditiveExpression() : {}
+{
+	MultiplicativeExpression() [ ( "+" | "-" ) AdditiveExpression() ]
+}
+
+void MultiplicativeExpression() : {}
+{
+	CastExpression() [ ( "*" | "/" | "%" ) MultiplicativeExpression() ]
+}
+
+void CastExpression() : {}
+{
+	( LOOKAHEAD("(" TypeName() ")" CastExpression() ) "(" TypeName() ")" CastExpression() |
+	UnaryExpression() )
+}
+
+void UnaryExpression() : {}
+{
+	( LOOKAHEAD(3) PostfixExpression() |
+	"++" UnaryExpression() |
+	"--" UnaryExpression() |
+	UnaryOperator() CastExpression() |
+	<SIZEOF> ( LOOKAHEAD(UnaryExpression() ) UnaryExpression() | "(" TypeName() ")" ) )
+}
+
+void UnaryOperator() : {}
+{
+	( "&" | "*" | "+" | "-" | "~" | "!" )
+}
+
+void PostfixExpression() : {}
+{
+	PrimaryExpression() ( "[" Expression() "]" |
+	"(" [ LOOKAHEAD(ArgumentExpressionList() ) ArgumentExpressionList() ] ")" |
+	"." Identifier() |
+	"->" Identifier() |
+	"++" |
+	"--" )*
+}
+
+void PrimaryExpression() : {}
+{
+	( Identifier() |
+	Constant() |
+	"(" Expression() ")" )
+}
+
+void ArgumentExpressionList() : {}
+{
+	AssignmentExpression() ( "," AssignmentExpression() )*
+}
+
+void Identifier() #StringToken :
+{
+	Token t;
+}
+{
+	t = <IDENTIFIER>
+	{
+		jjtThis.setValue(t.image);
+	}
+}
+
+void Constant() #StringToken :
+{
+	Token t;
+}
+{
+	(t = <INTEGER_LITERAL> | t = <FLOATING_POINT_LITERAL> | t = <CHARACTER_LITERAL> | t = <STRING_LITERAL>)
+	{
+		jjtThis.setValue(t.image);
+	}
+}

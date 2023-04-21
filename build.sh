@@ -87,7 +87,7 @@ fi
 
 status "Installing GhidRust"
 
-sudo rm -f "$GHIDRA"/*GhidRust* 2> /dev/null
+sudo rm -f "$GHIDRA"/Extensions/Ghidra/*GhidRust* 2> /dev/null
 sudo cp dist/* "$GHIDRA"/Extensions/Ghidra
 
 if [[ $? -ne 0 ]]; then
