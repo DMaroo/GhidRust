@@ -65,9 +65,9 @@ public class RustDecPlugin extends Plugin {
             @Override
             public void actionPerformed(ActionContext context) {
                 if (RustStdAnalyzer.isRustBinary(program)) {
-                    Msg.info(this, "[+] Yes, this may be a Rust binary!");
+                    Msg.showInfo(this, null, "GhidRust", "[+] Yes, this may be a Rust binary!");
                 } else {
-                    Msg.info(this, "[-] No, this may not be a Rust binary!");
+                    Msg.showInfo(this, null, "GhidRust", "[-] No, this may not be a Rust binary!");
                 }
             }
         };
