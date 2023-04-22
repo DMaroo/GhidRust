@@ -17,5 +17,8 @@ gradle/
 gradlew
 gradlew.bat
 
+# Java class files
+*.class
+
 # misc
 .DS_Store
