@@ -22,7 +22,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 import docking.ComponentProvider;
-import ghidra.util.Msg;
 import ghidra.util.task.ConsoleTaskMonitor;
 import resources.ResourceManager;
 
@@ -37,7 +36,6 @@ public class RustDecProvider extends ComponentProvider {
     private Address addr;
 
     private DecompInterface decomp_ifc = null;
-    private CParser transpiler = null;
 
     private static final String EMPTY_LABEL = "<none>";
 

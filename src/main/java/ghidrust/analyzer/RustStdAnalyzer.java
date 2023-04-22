@@ -86,16 +86,6 @@ public class RustStdAnalyzer extends AbstractAnalyzer {
         return false;
     }
 
-    private static void logToFile(String s) {
-        try {
-            writer.append(s);
-            writer.append("\n");
-            writer.flush();
-        } catch (IOException exc) {
-            // pass
-        }
-    }
-
     static private boolean getNextChunk(InputStream stream, byte[] dest, int size) {
         byte end;
 
