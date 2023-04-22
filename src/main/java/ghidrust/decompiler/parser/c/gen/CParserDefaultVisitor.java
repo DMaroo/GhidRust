@@ -108,9 +108,6 @@ public class CParserDefaultVisitor implements CParserVisitor{
   public Object visit(ASTAssignmentExpression node, Object data){
     return defaultVisit(node, data);
   }
-  public Object visit(ASTAssignmentOperator node, Object data){
-    return defaultVisit(node, data);
-  }
   public Object visit(ASTConditionalExpression node, Object data){
     return defaultVisit(node, data);
   }
@@ -166,4 +163,4 @@ public class CParserDefaultVisitor implements CParserVisitor{
     return defaultVisit(node, data);
   }
 }
-/* JavaCC - OriginalChecksum=3e084c4d4fc2f72217d78b4001ae5330 (do not edit this line) */
+/* JavaCC - OriginalChecksum=02bd2f1bbfbe0abbaf156b1dcc67f14c (do not edit this line) */

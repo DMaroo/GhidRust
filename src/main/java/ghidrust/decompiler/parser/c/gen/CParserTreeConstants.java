@@ -36,25 +36,24 @@ public interface CParserTreeConstants
   public int JJTJUMPSTATEMENT = 30;
   public int JJTEXPRESSION = 31;
   public int JJTASSIGNMENTEXPRESSION = 32;
-  public int JJTASSIGNMENTOPERATOR = 33;
-  public int JJTCONDITIONALEXPRESSION = 34;
-  public int JJTCONSTANTEXPRESSION = 35;
-  public int JJTLOGICALOREXPRESSION = 36;
-  public int JJTLOGICALANDEXPRESSION = 37;
-  public int JJTINCLUSIVEOREXPRESSION = 38;
-  public int JJTEXCLUSIVEOREXPRESSION = 39;
-  public int JJTANDEXPRESSION = 40;
-  public int JJTEQUALITYEXPRESSION = 41;
-  public int JJTRELATIONALEXPRESSION = 42;
-  public int JJTSHIFTEXPRESSION = 43;
-  public int JJTADDITIVEEXPRESSION = 44;
-  public int JJTMULTIPLICATIVEEXPRESSION = 45;
-  public int JJTCASTEXPRESSION = 46;
-  public int JJTUNARYEXPRESSION = 47;
-  public int JJTUNARYOPERATOR = 48;
-  public int JJTPOSTFIXEXPRESSION = 49;
-  public int JJTPRIMARYEXPRESSION = 50;
-  public int JJTARGUMENTEXPRESSIONLIST = 51;
+  public int JJTCONDITIONALEXPRESSION = 33;
+  public int JJTCONSTANTEXPRESSION = 34;
+  public int JJTLOGICALOREXPRESSION = 35;
+  public int JJTLOGICALANDEXPRESSION = 36;
+  public int JJTINCLUSIVEOREXPRESSION = 37;
+  public int JJTEXCLUSIVEOREXPRESSION = 38;
+  public int JJTANDEXPRESSION = 39;
+  public int JJTEQUALITYEXPRESSION = 40;
+  public int JJTRELATIONALEXPRESSION = 41;
+  public int JJTSHIFTEXPRESSION = 42;
+  public int JJTADDITIVEEXPRESSION = 43;
+  public int JJTMULTIPLICATIVEEXPRESSION = 44;
+  public int JJTCASTEXPRESSION = 45;
+  public int JJTUNARYEXPRESSION = 46;
+  public int JJTUNARYOPERATOR = 47;
+  public int JJTPOSTFIXEXPRESSION = 48;
+  public int JJTPRIMARYEXPRESSION = 49;
+  public int JJTARGUMENTEXPRESSIONLIST = 50;
 
 
   public String[] jjtNodeName = {
@@ -91,7 +90,6 @@ public interface CParserTreeConstants
     "JumpStatement",
     "Expression",
     "AssignmentExpression",
-    "AssignmentOperator",
     "ConditionalExpression",
     "ConstantExpression",
     "LogicalORExpression",
@@ -112,4 +110,4 @@ public interface CParserTreeConstants
     "ArgumentExpressionList",
   };
 }
-/* JavaCC - OriginalChecksum=6481848a6a13fcbf09c2152866d8e998 (do not edit this line) */
+/* JavaCC - OriginalChecksum=6fdc7fd778ad43f052fadf52075bfbaa (do not edit this line) */

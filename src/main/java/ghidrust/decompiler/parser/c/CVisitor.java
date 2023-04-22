@@ -25,6 +25,14 @@ public class CVisitor implements CParserVisitor {
         type_map.put("code", "code");
     }
 
+    private StringBuilder indent(StringBuilder sb) {
+        for (int i = 0; i < indent_level; i++) {
+            sb.append("\t");
+        }
+
+        return sb;
+    }
+
     public Object defaultVisit(SimpleNode node, Object data) {
         StringBuilder sb = new StringBuilder("");
 
@@ -40,7 +48,7 @@ public class CVisitor implements CParserVisitor {
         return sb.toString();
     }
 
-    public Object defaultSpacedVisit(SimpleNode node, Object data) {
+    public Object defaultSpacedVisit(SimpleNode node, Object data, String separator, boolean last) {
         StringBuilder sb = new StringBuilder("");
 
         int child_count = node.jjtGetNumChildren();
@@ -49,8 +57,8 @@ public class CVisitor implements CParserVisitor {
             String ret = (String) child.jjtAccept(this, data);
             if (ret != null) {
                 sb.append(ret);
-                if (!ret.equals("") && i != child_count - 1) {
-                    sb.append(" ");
+                if (!ret.equals("") && (last || i != child_count - 1)) {
+                    sb.append(separator);
                 }
             }
         }
@@ -91,7 +99,7 @@ public class CVisitor implements CParserVisitor {
         rust_code.append(" {\n");
         indent_level++;
         rust_code.append(node.jjtGetChild(2).jjtAccept(this, data));
-        rust_code.append("\n}\n");
+        rust_code.append("}\n");
         indent_level--;
 
         return rust_code.toString();
@@ -102,28 +110,32 @@ public class CVisitor implements CParserVisitor {
         String[] ret = (String[]) node.jjtGetChild(1).jjtAccept(this, data);
 
         for (int i = 0; i < ret.length / 2; i++) {
-            for (int j = 0; j < indent_level; j++) {
-                sb.append("\t");
+            if (i != 0) {
+                sb = indent(sb);
             }
 
             sb.append("let mut ");
             sb.append(ret[2 * i]);
             sb.append(": ");
             sb.append(node.jjtGetChild(0).jjtAccept(this, data));
-            sb.append(" = ");
-            sb.append(ret[2 * i + 1]);
-            sb.append(";\n");
+            if (ret[2 * i + 1] != null) {
+                sb.append(" = ");
+                sb.append(ret[2 * i + 1]);
+            }
+            sb.append(";");
+            sb.append("\n");
         }
 
         return sb.toString();
     }
 
     public Object visit(ASTDeclarationList node, Object data) {
-        return defaultVisit(node, data);
+        StringBuilder sb = indent(new StringBuilder(""));
+        return sb.toString() + defaultSpacedVisit(node, data, sb.toString(), false);
     }
 
     public Object visit(ASTDeclarationSpecifiers node, Object data) {
-        return defaultSpacedVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTInitDeclaratorList node, Object data) {
@@ -239,7 +251,8 @@ public class CVisitor implements CParserVisitor {
     }
 
     public Object visit(ASTStatement node, Object data) {
-        return defaultVisit(node, data);
+        StringBuilder sb = indent(new StringBuilder(""));
+        return sb.toString() + defaultVisit(node, data);
     }
 
     public Object visit(ASTLabeledStatement node, Object data) {
@@ -255,7 +268,7 @@ public class CVisitor implements CParserVisitor {
     }
 
     public Object visit(ASTStatementList node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, "\n", true);
     }
 
     public Object visit(ASTSelectionStatement node, Object data) {
@@ -268,11 +281,9 @@ public class CVisitor implements CParserVisitor {
 
     public Object visit(ASTJumpStatement node, Object data) {
         StringBuilder sb = new StringBuilder("");
-        for (int i = 0; i < indent_level; i++) {
-            sb.append("\t");
-        }
 
         if (node.jjtGetNumChildren() > 0 && node.jjtGetChild(0) instanceof ASTExpression) {
+            sb.append("return ");
             sb.append(node.jjtGetChild(0).jjtAccept(this, data));
         } else {
             sb.append(defaultVisit(node, data));
@@ -281,71 +292,74 @@ public class CVisitor implements CParserVisitor {
     }
 
     public Object visit(ASTExpression node, Object data) {
-        return defaultVisit(node, data);
+        if (node.jjtGetChild(0) instanceof ASTAssignmentExpression) {
+            return defaultSpacedVisit(node, data, " ", false) + ";";
+        } else {
+            ASTDeclaration decl = new ASTDeclaration(0);
+            decl.jjtAddChild(node.jjtGetChild(0), 0);
+            decl.jjtAddChild(node.jjtGetChild(1), 1);
+            return decl.jjtAccept(this, data);
+        }
     }
 
     public Object visit(ASTAssignmentExpression node, Object data) {
-        return defaultVisit(node, data);
-    }
-
-    public Object visit(ASTAssignmentOperator node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTConditionalExpression node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTConstantExpression node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTLogicalORExpression node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTLogicalANDExpression node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTInclusiveORExpression node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTExclusiveORExpression node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTANDExpression node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTEqualityExpression node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTRelationalExpression node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTShiftExpression node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTAdditiveExpression node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTMultiplicativeExpression node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTCastExpression node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTUnaryExpression node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTUnaryOperator node, Object data) {
@@ -353,11 +367,11 @@ public class CVisitor implements CParserVisitor {
     }
 
     public Object visit(ASTPostfixExpression node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTPrimaryExpression node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, " ", false);
     }
 
     public Object visit(ASTArgumentExpressionList node, Object data) {

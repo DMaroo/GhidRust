@@ -37,7 +37,6 @@ public interface CParserVisitor
   public Object visit(ASTJumpStatement node, Object data);
   public Object visit(ASTExpression node, Object data);
   public Object visit(ASTAssignmentExpression node, Object data);
-  public Object visit(ASTAssignmentOperator node, Object data);
   public Object visit(ASTConditionalExpression node, Object data);
   public Object visit(ASTConstantExpression node, Object data);
   public Object visit(ASTLogicalORExpression node, Object data);
@@ -57,4 +56,4 @@ public interface CParserVisitor
   public Object visit(ASTPrimaryExpression node, Object data);
   public Object visit(ASTArgumentExpressionList node, Object data);
 }
-/* JavaCC - OriginalChecksum=268378ad65a278fa22d6bd4787195a5f (do not edit this line) */
+/* JavaCC - OriginalChecksum=1f05897c3d57918f597035227f8d60dd (do not edit this line) */

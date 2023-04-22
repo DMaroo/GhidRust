@@ -349,9 +349,15 @@ void AssignmentExpression() : {}
 	LOOKAHEAD(3) ConditionalExpression()
 }
 
-void AssignmentOperator() : {}
+void AssignmentOperator() #StringToken :
 {
-	( "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^=" | "|=" )
+	Token t;
+}
+{
+	( t = "=" | t = "*=" | t = "/=" | t = "%=" | t = "+=" | t = "-=" | t = "<<=" | t = ">>=" | t = "&=" | t = "^=" | t = "|=" )
+	{
+		jjtThis.setValue(t.image);
+	}
 }
 
 void ConditionalExpression() : {}
@@ -406,7 +412,18 @@ void ShiftExpression() : {}
 
 void AdditiveExpression() : {}
 {
-	MultiplicativeExpression() [ ( "+" | "-" ) AdditiveExpression() ]
+	MultiplicativeExpression() [ AdditionOperator() AdditiveExpression() ]
+}
+
+void AdditionOperator() #StringToken :
+{
+	Token t;
+}
+{
+	( t = "+" | t = "-" )
+	{
+		jjtThis.setValue(t.image);
+	}
 }
 
 void MultiplicativeExpression() : {}

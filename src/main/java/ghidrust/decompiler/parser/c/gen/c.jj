@@ -1189,15 +1189,26 @@ void AssignmentExpression() : {/*@bgen(jjtree) AssignmentExpression */
 /*@egen*/
 }
 
-void AssignmentOperator() : {/*@bgen(jjtree) AssignmentOperator */
-  ASTAssignmentOperator jjtn000 = new ASTAssignmentOperator(JJTASSIGNMENTOPERATOR);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) AssignmentOperator */
+void AssignmentOperator()              :
+{/*@bgen(jjtree) StringToken */
+        ASTStringToken jjtn000 = new ASTStringToken(JJTSTRINGTOKEN);
+        boolean jjtc000 = true;
+        jjtree.openNodeScope(jjtn000);
+/*@egen*/
+	Token t;
+}
+{/*@bgen(jjtree) StringToken */
         try {
 /*@egen*/
-	( "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^=" | "|=" )/*@bgen(jjtree)*/
+	( t = "=" | t = "*=" | t = "/=" | t = "%=" | t = "+=" | t = "-=" | t = "<<=" | t = ">>=" | t = "&=" | t = "^=" | t = "|=" )/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{
+		jjtn000.setValue(t.image);
+	}/*@bgen(jjtree)*/
         } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
@@ -1524,7 +1535,7 @@ void AdditiveExpression() : {/*@bgen(jjtree) AdditiveExpression */
 {/*@bgen(jjtree) AdditiveExpression */
         try {
 /*@egen*/
-	MultiplicativeExpression() [ ( "+" | "-" ) AdditiveExpression() ]/*@bgen(jjtree)*/
+	MultiplicativeExpression() [ AdditionOperator() AdditiveExpression() ]/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -1539,6 +1550,34 @@ void AdditiveExpression() : {/*@bgen(jjtree) AdditiveExpression */
             throw (ParseException)jjte000;
           }
           throw (Error)jjte000;
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+        }
+/*@egen*/
+}
+
+void AdditionOperator()              :
+{/*@bgen(jjtree) StringToken */
+        ASTStringToken jjtn000 = new ASTStringToken(JJTSTRINGTOKEN);
+        boolean jjtc000 = true;
+        jjtree.openNodeScope(jjtn000);
+/*@egen*/
+	Token t;
+}
+{/*@bgen(jjtree) StringToken */
+        try {
+/*@egen*/
+	( t = "+" | t = "-" )/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{
+		jjtn000.setValue(t.image);
+	}/*@bgen(jjtree)*/
         } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
