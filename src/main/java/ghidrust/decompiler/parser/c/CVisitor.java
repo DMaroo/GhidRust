@@ -49,7 +49,7 @@ public class CVisitor implements CParserVisitor {
             String ret = (String) child.jjtAccept(this, data);
             if (ret != null) {
                 sb.append(ret);
-                if (!ret.equals("")) {
+                if (!ret.equals("") && i != child_count - 1) {
                     sb.append(" ");
                 }
             }
@@ -141,7 +141,7 @@ public class CVisitor implements CParserVisitor {
         String[] ret = new String[2];
         ret[0] = (String) node.jjtGetChild(0).jjtAccept(this, data);
         if (node.jjtGetNumChildren() == 1) {
-            ret[1] = "0";
+            ret[1] = null;
         } else {
             ret[1] = (String) node.jjtGetChild(1).jjtAccept(this, data);
         }
@@ -195,12 +195,23 @@ public class CVisitor implements CParserVisitor {
     }
 
     public Object visit(ASTParameterList node, Object data) {
-        return defaultVisit(node, data);
+        StringBuilder sb = new StringBuilder("");
+        for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+            if (i != 0) {
+                sb.append(", ");
+            }
+            sb.append(node.jjtGetChild(i).jjtAccept(this, data));
+        }
+
+        return sb.toString();
     }
 
     public Object visit(ASTParameterDeclaration node, Object data) {
-        StringBuilder param = new StringBuilder((String) defaultSpacedVisit(node, data));
-        return param.toString();
+        StringBuilder sb = new StringBuilder("");
+        sb.append(node.jjtGetChild(1).jjtAccept(this, data));
+        sb.append(": ");
+        sb.append(node.jjtGetChild(0).jjtAccept(this, data));
+        return sb.toString();
     }
 
     public Object visit(ASTIdentifierList node, Object data) {
