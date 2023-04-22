@@ -100,6 +100,8 @@ public interface CParserConstants {
   int LETTER = 55;
   /** RegularExpression Id. */
   int DIGIT = 56;
+  /** RegularExpression Id. */
+  int SEPARATOR = 57;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -165,6 +167,7 @@ public interface CParserConstants {
     "<IDENTIFIER>",
     "<LETTER>",
     "<DIGIT>",
+    "<SEPARATOR>",
     "\";\"",
     "\",\"",
     "\"=\"",

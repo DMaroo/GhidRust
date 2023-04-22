@@ -98,7 +98,24 @@ public class CVisitor implements CParserVisitor {
     }
 
     public Object visit(ASTDeclaration node, Object data) {
-        return defaultVisit(node, data);
+        StringBuilder sb = new StringBuilder("");
+        String[] ret = (String[]) node.jjtGetChild(1).jjtAccept(this, data);
+
+        for (int i = 0; i < ret.length / 2; i++) {
+            for (int j = 0; j < indent_level; j++) {
+                sb.append("\t");
+            }
+
+            sb.append("let mut ");
+            sb.append(ret[2 * i]);
+            sb.append(": ");
+            sb.append(node.jjtGetChild(0).jjtAccept(this, data));
+            sb.append(" = ");
+            sb.append(ret[2 * i + 1]);
+            sb.append(";\n");
+        }
+
+        return sb.toString();
     }
 
     public Object visit(ASTDeclarationList node, Object data) {
@@ -106,22 +123,30 @@ public class CVisitor implements CParserVisitor {
     }
 
     public Object visit(ASTDeclarationSpecifiers node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data);
     }
 
     public Object visit(ASTInitDeclaratorList node, Object data) {
-        if (node.jjtGetNumChildren() == 1) {
-            return node.jjtGetChild(0).jjtAccept(this, data);
-        } else {
-            StringBuilder sb = new StringBuilder("&");
-            sb.append(node.jjtGetChild(0).jjtAccept(this, data));
-            sb.append(node.jjtGetChild(1).jjtAccept(this, data));
-            return sb.toString();
+        String[] ret = new String[node.jjtGetNumChildren() * 2];
+        for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+            String[] child_ret = (String[]) node.jjtGetChild(i).jjtAccept(this, data);
+            ret[2 * i] = child_ret[0];
+            ret[2 * i + 1] = child_ret[1];
         }
+
+        return ret;
     }
 
     public Object visit(ASTInitDeclarator node, Object data) {
-        return defaultVisit(node, data);
+        String[] ret = new String[2];
+        ret[0] = (String) node.jjtGetChild(0).jjtAccept(this, data);
+        if (node.jjtGetNumChildren() == 1) {
+            ret[1] = "0";
+        } else {
+            ret[1] = (String) node.jjtGetChild(1).jjtAccept(this, data);
+        }
+
+        return ret;
     }
 
     public Object visit(ASTSpecifierQualifierList node, Object data) {
@@ -175,8 +200,6 @@ public class CVisitor implements CParserVisitor {
 
     public Object visit(ASTParameterDeclaration node, Object data) {
         StringBuilder param = new StringBuilder((String) defaultSpacedVisit(node, data));
-        /* Get rid of the trailing space */
-        param.setLength(param.length() - 1);
         return param.toString();
     }
 
@@ -237,11 +260,9 @@ public class CVisitor implements CParserVisitor {
         for (int i = 0; i < indent_level; i++) {
             sb.append("\t");
         }
-        
-        if (node.jjtGetNumChildren() == 0 || node.jjtGetChild(0) instanceof ASTExpression) {
-            sb.append("return ");
+
+        if (node.jjtGetNumChildren() > 0 && node.jjtGetChild(0) instanceof ASTExpression) {
             sb.append(node.jjtGetChild(0).jjtAccept(this, data));
-            sb.append(";");
         } else {
             sb.append(defaultVisit(node, data));
         }

@@ -22,8 +22,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 import docking.ComponentProvider;
+import ghidra.util.Msg;
 import ghidra.util.task.ConsoleTaskMonitor;
 import resources.ResourceManager;
+
+import ghidrust.decompiler.parser.c.gen.CParser;
 
 public class RustDecProvider extends ComponentProvider {
     private JPanel panel;
@@ -34,6 +37,7 @@ public class RustDecProvider extends ComponentProvider {
     private Address addr;
 
     private DecompInterface decomp_ifc = null;
+    private CParser transpiler = null;
 
     private static final String EMPTY_LABEL = "<none>";
 
@@ -125,11 +129,20 @@ public class RustDecProvider extends ComponentProvider {
         }
 
         DecompileResults results = decomp_ifc.decompileFunction(func, 0, new ConsoleTaskMonitor());
-        if (results == null || results.getDecompiledFunction() == null) {
+        if (results == null || results.getDecompiledFunction() == null || results.getDecompiledFunction().getC() == null) {
             code_area.setText("[!] Failed to decompile " + func.getName() + "\n");
             return;
         }
 
-        code_area.setText(results.getDecompiledFunction().getC());
+        String decompiled = results.getDecompiledFunction().getC();
+        String rust_code = "";
+
+        try {
+            rust_code = CParser.transpile(decompiled);
+        } catch (Exception e) {
+            rust_code = "/* [!] Failed to transpile " + func.getName() + " */\n" + decompiled;
+        }
+
+        code_area.setText(rust_code);
     }
 }

@@ -12,6 +12,7 @@ From: https://github.com/javacc/javacc/blob/master/grammars/CParser.jj
 options {
 	             
 	               
+	STATIC = false;
 }
 
 PARSER_BEGIN(CParser)
@@ -22,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 import ghidrust.decompiler.parser.c.CVisitor;
 
 public class CParser/*@bgen(jjtree)*/implements CParserTreeConstants/*@egen*/ {/*@bgen(jjtree)*/
-  protected static JJTCParserState jjtree = new JJTCParserState();
+  protected JJTCParserState jjtree = new JJTCParserState();
 
 /*@egen*/
 	private static CParser c_parser;
@@ -123,9 +124,10 @@ TOKEN : {
 }
 
 TOKEN : {
-	<IDENTIFIER: <LETTER> (<LETTER> | <DIGIT>)*>
+	<IDENTIFIER: (<LETTER> | <SEPARATOR> <SEPARATOR>) (<LETTER> | <SEPARATOR> <SEPARATOR> | <DIGIT>)*>
 	|  <#LETTER: ["$","A"-"Z","_","a"-"z"]>
 	|  <#DIGIT: ["0"-"9"]>
+	|  <#SEPARATOR: [":"]>
 }
 
 

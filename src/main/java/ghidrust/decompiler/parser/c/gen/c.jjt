@@ -11,6 +11,7 @@ From: https://github.com/javacc/javacc/blob/master/grammars/CParser.jj
 options {
 	MULTI = true;
 	VISITOR = true;
+	STATIC = false;
 }
 
 PARSER_BEGIN(CParser)
@@ -119,9 +120,10 @@ TOKEN : {
 }
 
 TOKEN : {
-	<IDENTIFIER: <LETTER> (<LETTER> | <DIGIT>)*>
+	<IDENTIFIER: (<LETTER> | <SEPARATOR> <SEPARATOR>) (<LETTER> | <SEPARATOR> <SEPARATOR> | <DIGIT>)*>
 	|  <#LETTER: ["$","A"-"Z","_","a"-"z"]>
 	|  <#DIGIT: ["0"-"9"]>
+	|  <#SEPARATOR: [":"]>
 }
 
 
