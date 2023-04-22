@@ -69,3 +69,5 @@ You can install it using the install flag as follows.
 ## Adding it to Ghidra
 
 To add it to Ghidra, just click on `File -> Install Extensions...` and choose GhidRust there. Once installed, you will have a `GhidRust` entry in the Ghidra toolbar which can be used to invoke the plugin.
+
+You might need to activate it from the `File -> Configure...` menu. Choose the `Miscellaneous` section, and click the checkbox beside _RustDecPlugin_.
