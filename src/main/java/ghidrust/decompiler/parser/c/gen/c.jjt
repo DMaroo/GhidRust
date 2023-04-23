@@ -27,6 +27,10 @@ public class CParser {
 	// Run the parser
 	public static String transpile(String c_code) {
 		InputStream stream = new ByteArrayInputStream(c_code.getBytes(StandardCharsets.UTF_8));
+		return transpile(stream);
+	}
+
+	public static String transpile(InputStream stream) {
 		c_parser = new CParser(stream);
 		
 		try {
@@ -80,7 +84,8 @@ TOKEN : {
 	|  <#EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+>
 	|  <CHARACTER_LITERAL: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"])) "\'">
 	|  <STRING_LITERAL: "\"" ( ~["\"","\\","\n","\r"] | "\\" ( ["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])?  | ["0"-"3"] ["0"-"7"] ["0"-"7"] | ( ["\n","\r"] | "\r\n")))* "\"">
-	| <UNDEFINED_TYPE: "undefined" (<DECIMAL_LITERAL>)?> // Ghidra specific unknown type
+	|  <BOOLEAN: "true" | "false">
+	|  <UNDEFINED_TYPE: "undefined" (<DECIMAL_LITERAL>)?> // Ghidra specific unknown type
 }
 
 TOKEN : {
@@ -116,6 +121,7 @@ TOKEN : {
 	<INT: "int"> |
 	<IF: "if"> |
 	<DO: "do"> |
+	<BOOL_TYPE: "bool"> |
 	<CODE: "code"> // code ptr, Ghidra specific
 }
 
@@ -173,7 +179,7 @@ void TypeSpecifier() #TypeStringToken :
 }
 {
 	( t = <VOID> | t = <CHAR> | t = <SHORT> | t = <INT> | t = <LONG> | t = <FLOAT> | t = <DOUBLE> | t = <SIGNED> |
-	t = <UNSIGNED> | t = <CODE> | t = <UNDEFINED_TYPE> )
+	t = <UNSIGNED> | t = <BOOL_TYPE> | t = <CODE> | t = <UNDEFINED_TYPE> )
 	{
 		jjtThis.setValue(t.image);
 	}
@@ -285,7 +291,7 @@ void DirectAbstractDeclarator() : {}
 
 void Statement() : {}
 {
-	( LOOKAHEAD(2) LabeledStatement() |
+	( LOOKAHEAD(Identifier() ":") LabeledStatement() |
 	ExpressionStatement() |
 	CompoundStatement() |
 	SelectionStatement() |
@@ -451,14 +457,19 @@ void UnaryOperator() : {}
 	( "&" | "*" | "+" | "-" | "~" | "!" )
 }
 
-void PostfixExpression() : {}
+void PostfixExpression() : {
+	int choice = 0;
+}
 {
-	PrimaryExpression() ( "[" Expression() "]" |
-	"(" [ LOOKAHEAD(ArgumentExpressionList() ) ArgumentExpressionList() ] ")" |
-	"." Identifier() |
-	"->" Identifier() |
-	"++" |
-	"--" )*
+	PrimaryExpression() ( "[" Expression() "]" { choice = 1; } |
+	"(" [ LOOKAHEAD(ArgumentExpressionList() ) ArgumentExpressionList() ] ")" { choice = 2; } |
+	"." Identifier() { choice = 3; } |
+	"->" Identifier() | { choice = 4; }
+	"++" | { choice = 5; }
+	"--" { choice = 6; } )*
+	{
+		jjtThis.choice = choice;
+	}
 }
 
 void PrimaryExpression() : {}
@@ -473,14 +484,23 @@ void ArgumentExpressionList() : {}
 	AssignmentExpression() ( "," AssignmentExpression() )*
 }
 
-void Identifier() #StringToken :
+ASTStringToken Identifier() #StringToken :
 {
-	Token t;
+	Token r = null;
+	ASTStringToken t = null;
+	Token s = null;
+	int choice;
 }
 {
-	t = <IDENTIFIER>
+	(LOOKAHEAD(<IDENTIFIER>) r = <IDENTIFIER> { choice = 0; } | [ r = <IDENTIFIER> ] "<" t = Identifier() ">" [ s = <IDENTIFIER> ] { choice = 1; })
 	{
-		jjtThis.setValue(t.image);
+		if (choice == 1) {
+			jjtThis.setValue((r != null ? r.image : "") + "<" + t.getValue() + ">" + (s != null ? s.image : ""));
+		} else {
+			jjtThis.setValue(r.image);
+		}
+
+		return jjtThis;
 	}
 }
 
@@ -489,7 +509,7 @@ void Constant() #StringToken :
 	Token t;
 }
 {
-	(t = <INTEGER_LITERAL> | t = <FLOATING_POINT_LITERAL> | t = <CHARACTER_LITERAL> | t = <STRING_LITERAL>)
+	(t = <INTEGER_LITERAL> | t = <FLOATING_POINT_LITERAL> | t = <CHARACTER_LITERAL> | t = <STRING_LITERAL> | t = <BOOLEAN>)
 	{
 		jjtThis.setValue(t.image);
 	}

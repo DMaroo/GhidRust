@@ -4,8 +4,11 @@
 
 cd c/gen
 
-for file in AST*Token.java; do 
-    mv -- "$file" "${file%.java}.bak"
+BACKUP_FILES="ASTPostfixExpression \
+$(ls -1 AST*Token.java | cut -d. -f1 | tr '\n' ' ')"
+
+for file in $BACKUP_FILES; do
+    mv -- "${file}.java" "${file}.bak"
 done
 
 rm -f *.java c.jj
@@ -19,6 +22,6 @@ for file in *.java; do
     sed -i '1s/^/package ghidrust.decompiler.parser.c.gen;\n\n/' $file
 done
 
-for file in AST*Token.bak; do 
-    mv -- "$file" "${file%.bak}.java"
+for file in $BACKUP_FILES; do
+    mv -- "${file}.bak" "${file}.java"
 done

@@ -94,8 +94,12 @@ public class CVisitor implements CParserVisitor {
 
         rust_code.append("fn ");
         rust_code.append(node.jjtGetChild(1).jjtAccept(this, data));
-        rust_code.append("-> ");
-        rust_code.append(node.jjtGetChild(0).jjtAccept(this, data));
+
+        String ret_type = (String) node.jjtGetChild(0).jjtAccept(this, data);
+        if (!ret_type.equals("")) {
+            rust_code.append("-> ");
+        }
+        rust_code.append(ret_type);
         rust_code.append(" {\n");
         indent_level++;
         rust_code.append(node.jjtGetChild(2).jjtAccept(this, data));
@@ -220,8 +224,11 @@ public class CVisitor implements CParserVisitor {
 
     public Object visit(ASTParameterDeclaration node, Object data) {
         StringBuilder sb = new StringBuilder("");
-        sb.append(node.jjtGetChild(1).jjtAccept(this, data));
-        sb.append(": ");
+
+        if (node.jjtGetNumChildren() > 1) {
+            sb.append(node.jjtGetChild(1).jjtAccept(this, data));
+            sb.append(": ");
+        }
         sb.append(node.jjtGetChild(0).jjtAccept(this, data));
         return sb.toString();
     }
@@ -355,7 +362,14 @@ public class CVisitor implements CParserVisitor {
     }
 
     public Object visit(ASTCastExpression node, Object data) {
-        return defaultSpacedVisit(node, data, " ", false);
+        StringBuilder sb = new StringBuilder("");
+        if (node.jjtGetNumChildren() > 1) {
+            sb.append(node.jjtGetChild(1).jjtAccept(this, data));
+            sb.append(" as ");
+        }
+        sb.append(node.jjtGetChild(0).jjtAccept(this, data));
+
+        return sb.toString();
     }
 
     public Object visit(ASTUnaryExpression node, Object data) {
@@ -367,6 +381,21 @@ public class CVisitor implements CParserVisitor {
     }
 
     public Object visit(ASTPostfixExpression node, Object data) {
+        StringBuilder sb = new StringBuilder("");
+        sb.append(node.jjtGetChild(0).jjtAccept(this, data));
+
+        if (node.choice == 2) {
+            /* Function call */
+            sb.append("(");
+
+            for (int i = 1; i < node.jjtGetNumChildren(); i++) {
+                sb.append(node.jjtGetChild(i).jjtAccept(this, data));
+            }
+
+            sb.append(")");
+            return sb.toString();
+        }
+
         return defaultSpacedVisit(node, data, " ", false);
     }
 
@@ -375,7 +404,7 @@ public class CVisitor implements CParserVisitor {
     }
 
     public Object visit(ASTArgumentExpressionList node, Object data) {
-        return defaultVisit(node, data);
+        return defaultSpacedVisit(node, data, ", ", false);
     }
 }
 /*

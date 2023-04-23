@@ -27,81 +27,85 @@ public interface CParserConstants {
   /** RegularExpression Id. */
   int STRING_LITERAL = 19;
   /** RegularExpression Id. */
-  int UNDEFINED_TYPE = 20;
+  int BOOLEAN = 20;
   /** RegularExpression Id. */
-  int CONTINUE = 21;
+  int UNDEFINED_TYPE = 21;
   /** RegularExpression Id. */
-  int VOLATILE = 22;
+  int CONTINUE = 22;
   /** RegularExpression Id. */
-  int REGISTER = 23;
+  int VOLATILE = 23;
   /** RegularExpression Id. */
-  int UNSIGNED = 24;
+  int REGISTER = 24;
   /** RegularExpression Id. */
-  int TYPEDEF = 25;
+  int UNSIGNED = 25;
   /** RegularExpression Id. */
-  int DFLT = 26;
+  int TYPEDEF = 26;
   /** RegularExpression Id. */
-  int DOUBLE = 27;
+  int DFLT = 27;
   /** RegularExpression Id. */
-  int SIZEOF = 28;
+  int DOUBLE = 28;
   /** RegularExpression Id. */
-  int SWITCH = 29;
+  int SIZEOF = 29;
   /** RegularExpression Id. */
-  int RETURN = 30;
+  int SWITCH = 30;
   /** RegularExpression Id. */
-  int EXTERN = 31;
+  int RETURN = 31;
   /** RegularExpression Id. */
-  int STRUCT = 32;
+  int EXTERN = 32;
   /** RegularExpression Id. */
-  int STATIC = 33;
+  int STRUCT = 33;
   /** RegularExpression Id. */
-  int SIGNED = 34;
+  int STATIC = 34;
   /** RegularExpression Id. */
-  int WHILE = 35;
+  int SIGNED = 35;
   /** RegularExpression Id. */
-  int BREAK = 36;
+  int WHILE = 36;
   /** RegularExpression Id. */
-  int UNION = 37;
+  int BREAK = 37;
   /** RegularExpression Id. */
-  int CONST = 38;
+  int UNION = 38;
   /** RegularExpression Id. */
-  int FLOAT = 39;
+  int CONST = 39;
   /** RegularExpression Id. */
-  int SHORT = 40;
+  int FLOAT = 40;
   /** RegularExpression Id. */
-  int ELSE = 41;
+  int SHORT = 41;
   /** RegularExpression Id. */
-  int CASE = 42;
+  int ELSE = 42;
   /** RegularExpression Id. */
-  int LONG = 43;
+  int CASE = 43;
   /** RegularExpression Id. */
-  int ENUM = 44;
+  int LONG = 44;
   /** RegularExpression Id. */
-  int AUTO = 45;
+  int ENUM = 45;
   /** RegularExpression Id. */
-  int VOID = 46;
+  int AUTO = 46;
   /** RegularExpression Id. */
-  int CHAR = 47;
+  int VOID = 47;
   /** RegularExpression Id. */
-  int GOTO = 48;
+  int CHAR = 48;
   /** RegularExpression Id. */
-  int FOR = 49;
+  int GOTO = 49;
   /** RegularExpression Id. */
-  int INT = 50;
+  int FOR = 50;
   /** RegularExpression Id. */
-  int IF = 51;
+  int INT = 51;
   /** RegularExpression Id. */
-  int DO = 52;
+  int IF = 52;
   /** RegularExpression Id. */
-  int CODE = 53;
+  int DO = 53;
   /** RegularExpression Id. */
-  int IDENTIFIER = 54;
+  int BOOL_TYPE = 54;
   /** RegularExpression Id. */
-  int LETTER = 55;
+  int CODE = 55;
   /** RegularExpression Id. */
-  int DIGIT = 56;
+  int IDENTIFIER = 56;
   /** RegularExpression Id. */
-  int SEPARATOR = 57;
+  int LETTER = 57;
+  /** RegularExpression Id. */
+  int DIGIT = 58;
+  /** RegularExpression Id. */
+  int SEPARATOR = 59;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -130,6 +134,7 @@ public interface CParserConstants {
     "<EXPONENT>",
     "<CHARACTER_LITERAL>",
     "<STRING_LITERAL>",
+    "<BOOLEAN>",
     "<UNDEFINED_TYPE>",
     "\"continue\"",
     "\"volatile\"",
@@ -163,6 +168,7 @@ public interface CParserConstants {
     "\"int\"",
     "\"if\"",
     "\"do\"",
+    "\"bool\"",
     "\"code\"",
     "<IDENTIFIER>",
     "<LETTER>",

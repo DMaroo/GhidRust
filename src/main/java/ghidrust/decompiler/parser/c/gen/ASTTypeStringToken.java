@@ -4,7 +4,7 @@ package ghidrust.decompiler.parser.c.gen;
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 public
 class ASTTypeStringToken extends SimpleNode {
-  String str_value;
+  String str_val;
 
   public ASTTypeStringToken(int id) {
     super(id);
@@ -22,12 +22,12 @@ class ASTTypeStringToken extends SimpleNode {
     visitor.visit(this, data);
   }
 
-  public void setValue(String s) {
-    str_value = s;
+  public String getValue() {
+    return str_val;
   }
 
-  public String getValue() {
-    return str_value;
+  public void setValue(String value) {
+    this.str_val = value;
   }
 }
 /* JavaCC - OriginalChecksum=726f5c0cafc2cba1f5ca608dfd54d3e2 (do not edit this line) */

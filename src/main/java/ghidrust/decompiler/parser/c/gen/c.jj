@@ -31,6 +31,10 @@ public class CParser/*@bgen(jjtree)*/implements CParserTreeConstants/*@egen*/ {/
 	// Run the parser
 	public static String transpile(String c_code) {
 		InputStream stream = new ByteArrayInputStream(c_code.getBytes(StandardCharsets.UTF_8));
+		return transpile(stream);
+	}
+
+	public static String transpile(InputStream stream) {
 		c_parser = new CParser(stream);
 		
 		try {
@@ -84,7 +88,8 @@ TOKEN : {
 	|  <#EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+>
 	|  <CHARACTER_LITERAL: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"])) "\'">
 	|  <STRING_LITERAL: "\"" ( ~["\"","\\","\n","\r"] | "\\" ( ["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])?  | ["0"-"3"] ["0"-"7"] ["0"-"7"] | ( ["\n","\r"] | "\r\n")))* "\"">
-	| <UNDEFINED_TYPE: "undefined" (<DECIMAL_LITERAL>)?> // Ghidra specific unknown type
+	|  <BOOLEAN: "true" | "false">
+	|  <UNDEFINED_TYPE: "undefined" (<DECIMAL_LITERAL>)?> // Ghidra specific unknown type
 }
 
 TOKEN : {
@@ -120,6 +125,7 @@ TOKEN : {
 	<INT: "int"> |
 	<IF: "if"> |
 	<DO: "do"> |
+	<BOOL_TYPE: "bool"> |
 	<CODE: "code"> // code ptr, Ghidra specific
 }
 
@@ -309,7 +315,7 @@ void TypeSpecifier()                  :
         try {
 /*@egen*/
 	( t = <VOID> | t = <CHAR> | t = <SHORT> | t = <INT> | t = <LONG> | t = <FLOAT> | t = <DOUBLE> | t = <SIGNED> |
-	t = <UNSIGNED> | t = <CODE> | t = <UNDEFINED_TYPE> )/*@bgen(jjtree)*/
+	t = <UNSIGNED> | t = <BOOL_TYPE> | t = <CODE> | t = <UNDEFINED_TYPE> )/*@bgen(jjtree)*/
         {
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
@@ -871,7 +877,7 @@ void Statement() : {/*@bgen(jjtree) Statement */
 {/*@bgen(jjtree) Statement */
         try {
 /*@egen*/
-	( LOOKAHEAD(2) LabeledStatement() |
+	( LOOKAHEAD(Identifier() ":") LabeledStatement() |
 	ExpressionStatement() |
 	CompoundStatement() |
 	SelectionStatement() |
@@ -1702,19 +1708,29 @@ void UnaryOperator() : {/*@bgen(jjtree) UnaryOperator */
 }
 
 void PostfixExpression() : {/*@bgen(jjtree) PostfixExpression */
-  ASTPostfixExpression jjtn000 = new ASTPostfixExpression(JJTPOSTFIXEXPRESSION);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+        ASTPostfixExpression jjtn000 = new ASTPostfixExpression(JJTPOSTFIXEXPRESSION);
+        boolean jjtc000 = true;
+        jjtree.openNodeScope(jjtn000);
+/*@egen*/
+	int choice = 0;
+}
 {/*@bgen(jjtree) PostfixExpression */
         try {
 /*@egen*/
-	PrimaryExpression() ( "[" Expression() "]" |
-	"(" [ LOOKAHEAD(ArgumentExpressionList() ) ArgumentExpressionList() ] ")" |
-	"." Identifier() |
-	"->" Identifier() |
-	"++" |
-	"--" )*/*@bgen(jjtree)*/
+	PrimaryExpression() ( "[" Expression() "]" { choice = 1; } |
+	"(" [ LOOKAHEAD(ArgumentExpressionList() ) ArgumentExpressionList() ] ")" { choice = 2; } |
+	"." Identifier() { choice = 3; } |
+	"->" Identifier() | { choice = 4; }
+	"++" | { choice = 5; }
+	"--" { choice = 6; } )*/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{
+		jjtn000.choice = choice;
+	}/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -1801,26 +1817,49 @@ void ArgumentExpressionList() : {/*@bgen(jjtree) ArgumentExpressionList */
 /*@egen*/
 }
 
-void Identifier()              :
+ASTStringToken Identifier()              :
 {/*@bgen(jjtree) StringToken */
         ASTStringToken jjtn000 = new ASTStringToken(JJTSTRINGTOKEN);
         boolean jjtc000 = true;
         jjtree.openNodeScope(jjtn000);
 /*@egen*/
-	Token t;
+	Token r = null;
+	ASTStringToken t = null;
+	Token s = null;
+	int choice;
 }
 {/*@bgen(jjtree) StringToken */
         try {
 /*@egen*/
-	t = <IDENTIFIER>/*@bgen(jjtree)*/
+	(LOOKAHEAD(<IDENTIFIER>) r = <IDENTIFIER> { choice = 0; } | [ r = <IDENTIFIER> ] "<" t = Identifier() ">" [ s = <IDENTIFIER> ] { choice = 1; })/*@bgen(jjtree)*/
         {
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
         }
 /*@egen*/
 	{
-		jjtn000.setValue(t.image);
+		if (choice == 1) {
+			jjtn000.setValue((r != null ? r.image : "") + "<" + t.getValue() + ">" + (s != null ? s.image : ""));
+		} else {
+			jjtn000.setValue(r.image);
+		}
+
+		return jjtn000;
 	}/*@bgen(jjtree)*/
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
         } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
@@ -1840,7 +1879,7 @@ void Constant()              :
 {/*@bgen(jjtree) StringToken */
         try {
 /*@egen*/
-	(t = <INTEGER_LITERAL> | t = <FLOATING_POINT_LITERAL> | t = <CHARACTER_LITERAL> | t = <STRING_LITERAL>)/*@bgen(jjtree)*/
+	(t = <INTEGER_LITERAL> | t = <FLOATING_POINT_LITERAL> | t = <CHARACTER_LITERAL> | t = <STRING_LITERAL> | t = <BOOLEAN>)/*@bgen(jjtree)*/
         {
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
