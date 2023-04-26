@@ -7,8 +7,6 @@ import java.util.HashMap;
 public class CVisitor implements CParserVisitor {
     HashMap<String, String> type_map = new HashMap<String, String>();
 
-    int indent_level = 0;
-
     public CVisitor() {
         type_map.put("void", "");
         type_map.put("int", "i32");
@@ -23,14 +21,6 @@ public class CVisitor implements CParserVisitor {
         type_map.put("signed", "i32");
         type_map.put("unsigned", "u32");
         type_map.put("code", "code");
-    }
-
-    private StringBuilder indent(StringBuilder sb) {
-        for (int i = 0; i < indent_level; i++) {
-            sb.append("\t");
-        }
-
-        return sb;
     }
 
     public Object defaultVisit(SimpleNode node, Object data) {
@@ -71,7 +61,7 @@ public class CVisitor implements CParserVisitor {
     }
 
     public Object visit(ASTStringToken node, Object data) {
-        return node.getValue();
+        return node.image;
     }
 
     public Object visit(ASTGhostStringToken node, Object data) {
@@ -79,7 +69,7 @@ public class CVisitor implements CParserVisitor {
     }
 
     public Object visit(ASTTypeStringToken node, Object data) {
-        String typename = node.getValue();
+        String typename = node.image;
 
         if (type_map.containsKey(typename)) {
             return type_map.get(typename);
@@ -100,11 +90,9 @@ public class CVisitor implements CParserVisitor {
             rust_code.append("-> ");
         }
         rust_code.append(ret_type);
-        rust_code.append(" {\n");
-        indent_level++;
+        rust_code.append(" {");
         rust_code.append(node.jjtGetChild(2).jjtAccept(this, data));
-        rust_code.append("}\n");
-        indent_level--;
+        rust_code.append("}");
 
         return rust_code.toString();
     }
@@ -114,10 +102,6 @@ public class CVisitor implements CParserVisitor {
         String[] ret = (String[]) node.jjtGetChild(1).jjtAccept(this, data);
 
         for (int i = 0; i < ret.length / 2; i++) {
-            if (i != 0) {
-                sb = indent(sb);
-            }
-
             sb.append("let mut ");
             sb.append(ret[2 * i]);
             sb.append(": ");
@@ -127,17 +111,13 @@ public class CVisitor implements CParserVisitor {
                 sb.append(ret[2 * i + 1]);
             }
             sb.append(";");
-            if (i != ret.length / 2 - 1) {
-                sb.append("\n");
-            }
         }
 
         return sb.toString();
     }
 
     public Object visit(ASTDeclarationList node, Object data) {
-        StringBuilder sb = indent(new StringBuilder(""));
-        return sb.toString() + defaultSpacedVisit(node, data, "\n" + sb.toString(), false) + "\n";
+        return defaultVisit(node, data);
     }
 
     public Object visit(ASTDeclarationSpecifiers node, Object data) {
@@ -260,8 +240,22 @@ public class CVisitor implements CParserVisitor {
     }
 
     public Object visit(ASTStatement node, Object data) {
-        StringBuilder sb = indent(new StringBuilder(""));
-        return sb.toString() + defaultVisit(node, data) + ";\n";
+        StringBuilder sb = new StringBuilder("");
+
+        CContext ctx = new CContext();
+        int child_num = node.jjtGetNumChildren();
+
+        for (int i = 0; i < child_num; i++) {
+            sb.append(node.jjtGetChild(i).jjtAccept(this, ctx));
+
+            if (ctx.statement_end_sc) {
+                sb.append(";");
+            } else {
+                ctx.statement_end_sc = true;
+            }
+        }
+
+        return sb.toString();
     }
 
     public Object visit(ASTLabeledStatement node, Object data) {
@@ -273,7 +267,9 @@ public class CVisitor implements CParserVisitor {
     }
 
     public Object visit(ASTCompoundStatement node, Object data) {
-        return defaultVisit(node, data);
+        String ret = (String) defaultVisit(node, data);
+        ((CContext) data).statement_end_sc = false;
+        return ret;
     }
 
     public Object visit(ASTStatementList node, Object data) {
@@ -285,14 +281,33 @@ public class CVisitor implements CParserVisitor {
     }
 
     public Object visit(ASTIterationStatement node, Object data) {
-        return defaultVisit(node, data);
+        StringBuilder sb = new StringBuilder("");
+        
+        if (node.choice == 1) {
+            ((CContext) data).statement_end_sc = false;
+
+            sb.append("while ");
+            sb.append(node.jjtGetChild(0).jjtAccept(this, data));
+            sb.append(" {");
+
+            sb.append(node.jjtGetChild(1).jjtAccept(this, data));
+            sb.append("}");
+        } else if (node.choice == 2) {
+            sb.append("do {");
+            sb.append(node.jjtGetChild(0).jjtAccept(this, data));            
+            sb.append("} while (");
+            sb.append(node.jjtGetChild(1).jjtAccept(this, data));
+            sb.append(")");
+        }
+        
+        return sb.toString();
     }
 
     public Object visit(ASTJumpStatement node, Object data) {
         StringBuilder sb = new StringBuilder("");
 
         if (node.jjtGetNumChildren() > 0 && node.jjtGetChild(0) instanceof ASTExpression) {
-            sb.append("return ");
+            ((CContext) data).statement_end_sc = false;
             sb.append(node.jjtGetChild(0).jjtAccept(this, data));
         } else {
             sb.append(defaultVisit(node, data));
