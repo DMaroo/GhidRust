@@ -343,12 +343,18 @@ void IterationStatement() :
 	}
 }
 
-void JumpStatement() : {}
+void JumpStatement() :
 {
-	( <GOTO> Identifier() ";" |
-	<CONTINUE> ";" |
-	<BREAK> ";" |
-	<RETURN> [ Expression() ] ";" )
+	int choice = 0;
+}
+{
+	( <GOTO> Identifier() ";" | { choice = 1; }
+	<CONTINUE> ";" | { choice = 2; }
+	<BREAK> ";" | { choice = 3; }
+	<RETURN> [ Expression() ] ";" { choice = 4; } )
+	{
+		jjtThis.choice = choice;
+	}
 }
 
 void Expression() : {}
@@ -410,12 +416,34 @@ void ANDExpression() : {}
 
 void EqualityExpression() : {}
 {
-	RelationalExpression() [ ( "==" | "!=" ) EqualityExpression() ]
+	RelationalExpression() [ EqualityOperator() EqualityExpression() ]
+}
+
+void EqualityOperator() #StringToken :
+{
+	Token t;
+}
+{
+	( t = "==" | t = "!=" )
+	{
+		jjtThis.image = t.image;
+	}
 }
 
 void RelationalExpression() : {}
 {
-	ShiftExpression() [( "<" | ">" | "<=" | ">=" ) RelationalExpression()]
+	ShiftExpression() [ComparaisonOperator() RelationalExpression()]
+}
+
+void ComparaisonOperator() #StringToken :
+{
+	Token t;
+}
+{
+	( t = "<" | t = ">" | t = "<=" | t = ">="  )
+	{
+		jjtThis.image = t.image;
+	}
 }
 
 void ShiftExpression() : {}
@@ -450,18 +478,30 @@ void CastExpression() : {}
 	UnaryExpression() )
 }
 
-void UnaryExpression() : {}
+void UnaryExpression() :
 {
-	( LOOKAHEAD(3) PostfixExpression() |
-	"++" UnaryExpression() |
-	"--" UnaryExpression() |
-	UnaryOperator() CastExpression() |
-	<SIZEOF> ( LOOKAHEAD(UnaryExpression() ) UnaryExpression() | "(" TypeName() ")" ) )
+	int choice = 0;
+}
+{
+	( LOOKAHEAD(3) PostfixExpression() { choice = 1; } |
+	"++" UnaryExpression() { choice = 2; } |
+	"--" UnaryExpression() { choice = 3; } |
+	UnaryOperator() CastExpression() { choice = 4; } |
+	<SIZEOF> ( LOOKAHEAD(UnaryExpression() ) UnaryExpression() { choice = 5; } | "(" TypeName() ")" ) { choice = 6; } )
+	{
+		jjtThis.choice = choice;
+	}
 }
 
-void UnaryOperator() : {}
+void UnaryOperator() #StringToken :
 {
-	( "&" | "*" | "+" | "-" | "~" | "!" )
+	Token t;
+}
+{
+	( t = "&" | t = "*" | t = "+" | t = "-" | t = "~" | t = "!" )
+	{
+		jjtThis.image = t.image;
+	}
 }
 
 void PostfixExpression() : {

@@ -1110,18 +1110,29 @@ void IterationStatement() :
 /*@egen*/
 }
 
-void JumpStatement() : {/*@bgen(jjtree) JumpStatement */
-  ASTJumpStatement jjtn000 = new ASTJumpStatement(JJTJUMPSTATEMENT);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+void JumpStatement() :
+{/*@bgen(jjtree) JumpStatement */
+        ASTJumpStatement jjtn000 = new ASTJumpStatement(JJTJUMPSTATEMENT);
+        boolean jjtc000 = true;
+        jjtree.openNodeScope(jjtn000);
+/*@egen*/
+	int choice = 0;
+}
 {/*@bgen(jjtree) JumpStatement */
         try {
 /*@egen*/
-	( <GOTO> Identifier() ";" |
-	<CONTINUE> ";" |
-	<BREAK> ";" |
-	<RETURN> [ Expression() ] ";" )/*@bgen(jjtree)*/
+	( <GOTO> Identifier() ";" | { choice = 1; }
+	<CONTINUE> ";" | { choice = 2; }
+	<BREAK> ";" | { choice = 3; }
+	<RETURN> [ Expression() ] ";" { choice = 4; } )/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{
+		jjtn000.choice = choice;
+	}/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -1460,7 +1471,7 @@ void EqualityExpression() : {/*@bgen(jjtree) EqualityExpression */
 {/*@bgen(jjtree) EqualityExpression */
         try {
 /*@egen*/
-	RelationalExpression() [ ( "==" | "!=" ) EqualityExpression() ]/*@bgen(jjtree)*/
+	RelationalExpression() [ EqualityOperator() EqualityExpression() ]/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -1483,6 +1494,34 @@ void EqualityExpression() : {/*@bgen(jjtree) EqualityExpression */
 /*@egen*/
 }
 
+void EqualityOperator()              :
+{/*@bgen(jjtree) StringToken */
+        ASTStringToken jjtn000 = new ASTStringToken(JJTSTRINGTOKEN);
+        boolean jjtc000 = true;
+        jjtree.openNodeScope(jjtn000);
+/*@egen*/
+	Token t;
+}
+{/*@bgen(jjtree) StringToken */
+        try {
+/*@egen*/
+	( t = "==" | t = "!=" )/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{
+		jjtn000.image = t.image;
+	}/*@bgen(jjtree)*/
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+        }
+/*@egen*/
+}
+
 void RelationalExpression() : {/*@bgen(jjtree) RelationalExpression */
   ASTRelationalExpression jjtn000 = new ASTRelationalExpression(JJTRELATIONALEXPRESSION);
   boolean jjtc000 = true;
@@ -1491,7 +1530,7 @@ void RelationalExpression() : {/*@bgen(jjtree) RelationalExpression */
 {/*@bgen(jjtree) RelationalExpression */
         try {
 /*@egen*/
-	ShiftExpression() [( "<" | ">" | "<=" | ">=" ) RelationalExpression()]/*@bgen(jjtree)*/
+	ShiftExpression() [ComparaisonOperator() RelationalExpression()]/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -1506,6 +1545,34 @@ void RelationalExpression() : {/*@bgen(jjtree) RelationalExpression */
             throw (ParseException)jjte000;
           }
           throw (Error)jjte000;
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+        }
+/*@egen*/
+}
+
+void ComparaisonOperator()              :
+{/*@bgen(jjtree) StringToken */
+        ASTStringToken jjtn000 = new ASTStringToken(JJTSTRINGTOKEN);
+        boolean jjtc000 = true;
+        jjtree.openNodeScope(jjtn000);
+/*@egen*/
+	Token t;
+}
+{/*@bgen(jjtree) StringToken */
+        try {
+/*@egen*/
+	( t = "<" | t = ">" | t = "<=" | t = ">="  )/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{
+		jjtn000.image = t.image;
+	}/*@bgen(jjtree)*/
         } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
@@ -1667,19 +1734,30 @@ void CastExpression() : {/*@bgen(jjtree) CastExpression */
 /*@egen*/
 }
 
-void UnaryExpression() : {/*@bgen(jjtree) UnaryExpression */
-  ASTUnaryExpression jjtn000 = new ASTUnaryExpression(JJTUNARYEXPRESSION);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+void UnaryExpression() :
+{/*@bgen(jjtree) UnaryExpression */
+        ASTUnaryExpression jjtn000 = new ASTUnaryExpression(JJTUNARYEXPRESSION);
+        boolean jjtc000 = true;
+        jjtree.openNodeScope(jjtn000);
+/*@egen*/
+	int choice = 0;
+}
 {/*@bgen(jjtree) UnaryExpression */
         try {
 /*@egen*/
-	( LOOKAHEAD(3) PostfixExpression() |
-	"++" UnaryExpression() |
-	"--" UnaryExpression() |
-	UnaryOperator() CastExpression() |
-	<SIZEOF> ( LOOKAHEAD(UnaryExpression() ) UnaryExpression() | "(" TypeName() ")" ) )/*@bgen(jjtree)*/
+	( LOOKAHEAD(3) PostfixExpression() { choice = 1; } |
+	"++" UnaryExpression() { choice = 2; } |
+	"--" UnaryExpression() { choice = 3; } |
+	UnaryOperator() CastExpression() { choice = 4; } |
+	<SIZEOF> ( LOOKAHEAD(UnaryExpression() ) UnaryExpression() { choice = 5; } | "(" TypeName() ")" ) { choice = 6; } )/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{
+		jjtn000.choice = choice;
+	}/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -1702,15 +1780,26 @@ void UnaryExpression() : {/*@bgen(jjtree) UnaryExpression */
 /*@egen*/
 }
 
-void UnaryOperator() : {/*@bgen(jjtree) UnaryOperator */
-  ASTUnaryOperator jjtn000 = new ASTUnaryOperator(JJTUNARYOPERATOR);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) UnaryOperator */
+void UnaryOperator()              :
+{/*@bgen(jjtree) StringToken */
+        ASTStringToken jjtn000 = new ASTStringToken(JJTSTRINGTOKEN);
+        boolean jjtc000 = true;
+        jjtree.openNodeScope(jjtn000);
+/*@egen*/
+	Token t;
+}
+{/*@bgen(jjtree) StringToken */
         try {
 /*@egen*/
-	( "&" | "*" | "+" | "-" | "~" | "!" )/*@bgen(jjtree)*/
+	( t = "&" | t = "*" | t = "+" | t = "-" | t = "~" | t = "!" )/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{
+		jjtn000.image = t.image;
+	}/*@bgen(jjtree)*/
         } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);

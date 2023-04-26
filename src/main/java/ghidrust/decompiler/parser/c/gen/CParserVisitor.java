@@ -51,9 +51,8 @@ public interface CParserVisitor
   public Object visit(ASTMultiplicativeExpression node, Object data);
   public Object visit(ASTCastExpression node, Object data);
   public Object visit(ASTUnaryExpression node, Object data);
-  public Object visit(ASTUnaryOperator node, Object data);
   public Object visit(ASTPostfixExpression node, Object data);
   public Object visit(ASTPrimaryExpression node, Object data);
   public Object visit(ASTArgumentExpressionList node, Object data);
 }
-/* JavaCC - OriginalChecksum=1f05897c3d57918f597035227f8d60dd (do not edit this line) */
+/* JavaCC - OriginalChecksum=c11b3a8c5731c3cdcccff61a264d1174 (do not edit this line) */

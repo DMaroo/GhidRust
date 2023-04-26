@@ -4,7 +4,7 @@
 
 cd c/gen
 
-BACKUP_FILES="ASTPostfixExpression ASTIterationStatement \
+BACKUP_FILES="ASTPostfixExpression ASTIterationStatement ASTUnaryExpression ASTJumpStatement \
 $(ls -1 AST*Token.java | cut -d. -f1 | tr '\n' ' ')"
 
 for file in $BACKUP_FILES; do

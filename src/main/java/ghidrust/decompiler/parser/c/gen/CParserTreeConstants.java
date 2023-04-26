@@ -50,10 +50,9 @@ public interface CParserTreeConstants
   public int JJTMULTIPLICATIVEEXPRESSION = 44;
   public int JJTCASTEXPRESSION = 45;
   public int JJTUNARYEXPRESSION = 46;
-  public int JJTUNARYOPERATOR = 47;
-  public int JJTPOSTFIXEXPRESSION = 48;
-  public int JJTPRIMARYEXPRESSION = 49;
-  public int JJTARGUMENTEXPRESSIONLIST = 50;
+  public int JJTPOSTFIXEXPRESSION = 47;
+  public int JJTPRIMARYEXPRESSION = 48;
+  public int JJTARGUMENTEXPRESSIONLIST = 49;
 
 
   public String[] jjtNodeName = {
@@ -104,10 +103,9 @@ public interface CParserTreeConstants
     "MultiplicativeExpression",
     "CastExpression",
     "UnaryExpression",
-    "UnaryOperator",
     "PostfixExpression",
     "PrimaryExpression",
     "ArgumentExpressionList",
   };
 }
-/* JavaCC - OriginalChecksum=6fdc7fd778ad43f052fadf52075bfbaa (do not edit this line) */
+/* JavaCC - OriginalChecksum=e23e00fb56ffad799524355d8342c899 (do not edit this line) */

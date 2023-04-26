@@ -277,12 +277,16 @@ public class CVisitor implements CParserVisitor {
     }
 
     public Object visit(ASTSelectionStatement node, Object data) {
-        return defaultVisit(node, data);
+        StringBuilder ret = new StringBuilder(
+                "if (" + node.jjtGetChild(0).jjtAccept(this, data) + ") {" + node.jjtGetChild(1).jjtAccept(this, data));
+        ret.append("}");
+        ((CContext) data).statement_end_sc = false;
+        return ret;
     }
 
     public Object visit(ASTIterationStatement node, Object data) {
         StringBuilder sb = new StringBuilder("");
-        
+
         if (node.choice == 1) {
             ((CContext) data).statement_end_sc = false;
 
@@ -294,24 +298,29 @@ public class CVisitor implements CParserVisitor {
             sb.append("}");
         } else if (node.choice == 2) {
             sb.append("do {");
-            sb.append(node.jjtGetChild(0).jjtAccept(this, data));            
+            sb.append(node.jjtGetChild(0).jjtAccept(this, data));
             sb.append("} while (");
             sb.append(node.jjtGetChild(1).jjtAccept(this, data));
             sb.append(")");
         }
-        
+
         return sb.toString();
     }
 
     public Object visit(ASTJumpStatement node, Object data) {
         StringBuilder sb = new StringBuilder("");
 
-        if (node.jjtGetNumChildren() > 0 && node.jjtGetChild(0) instanceof ASTExpression) {
+        if (node.choice == 2) {
+            return "break";
+        } else if (node.choice == 3) {
+            return "continue";
+        } else if (node.choice == 4) {
             ((CContext) data).statement_end_sc = false;
             sb.append(node.jjtGetChild(0).jjtAccept(this, data));
         } else {
             sb.append(defaultVisit(node, data));
         }
+
         return sb.toString();
     }
 
@@ -399,11 +408,13 @@ public class CVisitor implements CParserVisitor {
     }
 
     public Object visit(ASTUnaryExpression node, Object data) {
-        return defaultSpacedVisit(node, data, " ", false);
-    }
+        String visit = (String) defaultVisit(node, data);
 
-    public Object visit(ASTUnaryOperator node, Object data) {
-        return defaultVisit(node, data);
+        if (node.choice > 1) {
+            return "(" + visit + ")";
+        } else {
+            return visit;
+        }
     }
 
     public Object visit(ASTPostfixExpression node, Object data) {
@@ -421,6 +432,12 @@ public class CVisitor implements CParserVisitor {
             sb.append("(");
             sb.append(node.jjtGetChild(1).jjtAccept(this, data));
             sb.append(")");
+
+            return sb.toString();
+        } else if (node.choice == 3) {
+            /* Field access */
+            sb.append(".");
+            sb.append(node.jjtGetChild(1).jjtAccept(this, data));
 
             return sb.toString();
         }

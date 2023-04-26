@@ -150,9 +150,6 @@ public class CParserDefaultVisitor implements CParserVisitor{
   public Object visit(ASTUnaryExpression node, Object data){
     return defaultVisit(node, data);
   }
-  public Object visit(ASTUnaryOperator node, Object data){
-    return defaultVisit(node, data);
-  }
   public Object visit(ASTPostfixExpression node, Object data){
     return defaultVisit(node, data);
   }
@@ -163,4 +160,4 @@ public class CParserDefaultVisitor implements CParserVisitor{
     return defaultVisit(node, data);
   }
 }
-/* JavaCC - OriginalChecksum=02bd2f1bbfbe0abbaf156b1dcc67f14c (do not edit this line) */
+/* JavaCC - OriginalChecksum=0df21b33819a468166075ef388879333 (do not edit this line) */
