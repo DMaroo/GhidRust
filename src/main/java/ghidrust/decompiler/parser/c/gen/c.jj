@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import ghidrust.decompiler.parser.c.CVisitor;
+import ghidrust.decompiler.parser.c.CContext;
 
 public class CParser/*@bgen(jjtree)*/implements CParserTreeConstants/*@egen*/ {/*@bgen(jjtree)*/
   protected JJTCParserState jjtree = new JJTCParserState();
@@ -48,7 +49,7 @@ public class CParser/*@bgen(jjtree)*/implements CParserTreeConstants/*@egen*/ {/
 	
 	public static String parse() throws ParseException {
 		CParserVisitor visitor = new CVisitor();
-        return (String) c_parser.FunctionDefinition().jjtAccept(visitor, null);
+        return (String) c_parser.FunctionDefinition().jjtAccept(visitor, new CContext());
 	}
 }
 
@@ -293,7 +294,7 @@ void StorageClassSpecifier()                   :
         }
 /*@egen*/
 	{
-		jjtn000.setValue(t.image);
+		jjtn000.image = t.image;
 	}/*@bgen(jjtree)*/
         } finally {
           if (jjtc000) {
@@ -322,7 +323,7 @@ void TypeSpecifier()                  :
         }
 /*@egen*/
 	{
-		jjtn000.setValue(t.image);
+		jjtn000.image = t.image;
 	}/*@bgen(jjtree)*/
         } finally {
           if (jjtc000) {
@@ -350,7 +351,7 @@ void TypeQualifier()              :
         }
 /*@egen*/
 	{
-		jjtn000.setValue(t.image);
+		jjtn000.image = t.image;
 	}/*@bgen(jjtree)*/
         } finally {
           if (jjtc000) {
@@ -1065,17 +1066,28 @@ void SelectionStatement() : {/*@bgen(jjtree) SelectionStatement */
 /*@egen*/
 }
 
-void IterationStatement() : {/*@bgen(jjtree) IterationStatement */
-  ASTIterationStatement jjtn000 = new ASTIterationStatement(JJTITERATIONSTATEMENT);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+void IterationStatement() :
+{/*@bgen(jjtree) IterationStatement */
+        ASTIterationStatement jjtn000 = new ASTIterationStatement(JJTITERATIONSTATEMENT);
+        boolean jjtc000 = true;
+        jjtree.openNodeScope(jjtn000);
+/*@egen*/
+	int choice = 0;
+}
 {/*@bgen(jjtree) IterationStatement */
         try {
 /*@egen*/
-	( <WHILE> "(" Expression() ")" Statement() |
-	<DO> Statement() <WHILE> "(" Expression() ")" ";" |
-	<FOR> "(" [ Expression() ] ";" [ Expression() ] ";" [ Expression() ] ")" Statement() )/*@bgen(jjtree)*/
+	( <WHILE> "(" Expression() ")" Statement() { choice = 1; } |
+	<DO> Statement() <WHILE> "(" Expression() ")" ";" { choice = 2; } |
+	<FOR> "(" [ Expression() ] ";" [ Expression() ] ";" [ Expression() ] ")" Statement() { choice = 3; } )/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{
+		jjtn000.choice = choice;
+	}/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -1213,7 +1225,7 @@ void AssignmentOperator()              :
         }
 /*@egen*/
 	{
-		jjtn000.setValue(t.image);
+		jjtn000.image = t.image;
 	}/*@bgen(jjtree)*/
         } finally {
           if (jjtc000) {
@@ -1479,7 +1491,7 @@ void RelationalExpression() : {/*@bgen(jjtree) RelationalExpression */
 {/*@bgen(jjtree) RelationalExpression */
         try {
 /*@egen*/
-	ShiftExpression() [ ( "<" | ">" | "<=" | ">=" ) RelationalExpression() ]/*@bgen(jjtree)*/
+	ShiftExpression() [( "<" | ">" | "<=" | ">=" ) RelationalExpression()]/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -1582,7 +1594,7 @@ void AdditionOperator()              :
         }
 /*@egen*/
 	{
-		jjtn000.setValue(t.image);
+		jjtn000.image = t.image;
 	}/*@bgen(jjtree)*/
         } finally {
           if (jjtc000) {
@@ -1826,22 +1838,22 @@ ASTStringToken Identifier()              :
 	Token r = null;
 	ASTStringToken t = null;
 	Token s = null;
-	int choice;
+	int choice = 0;
 }
 {/*@bgen(jjtree) StringToken */
         try {
 /*@egen*/
-	(LOOKAHEAD(<IDENTIFIER>) r = <IDENTIFIER> { choice = 0; } | [ r = <IDENTIFIER> ] "<" t = Identifier() ">" [ s = <IDENTIFIER> ] { choice = 1; })/*@bgen(jjtree)*/
+	(LOOKAHEAD(<IDENTIFIER>) r = <IDENTIFIER> { choice = 1; } | [ r = <IDENTIFIER> ] "<" t = Identifier() ">" [ s = <IDENTIFIER> ] { choice = 2; })/*@bgen(jjtree)*/
         {
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
         }
 /*@egen*/
 	{
-		if (choice == 1) {
-			jjtn000.setValue((r != null ? r.image : "") + "<" + t.getValue() + ">" + (s != null ? s.image : ""));
-		} else {
-			jjtn000.setValue(r.image);
+		if (choice == 2) {
+			jjtn000.image = (r != null ? r.image : "") + "<" + t.image + ">" + (s != null ? s.image : "");
+		} else if (choice == 1) {
+			jjtn000.image = r.image;
 		}
 
 		return jjtn000;
@@ -1886,7 +1898,7 @@ void Constant()              :
         }
 /*@egen*/
 	{
-		jjtn000.setValue(t.image);
+		jjtn000.image = t.image;
 	}/*@bgen(jjtree)*/
         } finally {
           if (jjtc000) {

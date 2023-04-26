@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import ghidrust.decompiler.parser.c.CVisitor;
+import ghidrust.decompiler.parser.c.CContext;
 
 /** Token Manager. */
 @SuppressWarnings ("unused")

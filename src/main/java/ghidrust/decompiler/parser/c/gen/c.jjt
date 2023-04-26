@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import ghidrust.decompiler.parser.c.CVisitor;
+import ghidrust.decompiler.parser.c.CContext;
 
 public class CParser {
 	private static CParser c_parser;
@@ -44,7 +45,7 @@ public class CParser {
 	
 	public static String parse() throws ParseException {
 		CParserVisitor visitor = new CVisitor();
-        return (String) c_parser.FunctionDefinition().jjtAccept(visitor, null);
+        return (String) c_parser.FunctionDefinition().jjtAccept(visitor, new CContext());
 	}
 }
 
@@ -169,7 +170,7 @@ void StorageClassSpecifier() #GhostStringToken :
 {
 	( t = <AUTO> | t = <REGISTER> | t = <STATIC> | t = <EXTERN> | t = <TYPEDEF> )
 	{
-		jjtThis.setValue(t.image);
+		jjtThis.image = t.image;
 	}
 }
 
@@ -181,7 +182,7 @@ void TypeSpecifier() #TypeStringToken :
 	( t = <VOID> | t = <CHAR> | t = <SHORT> | t = <INT> | t = <LONG> | t = <FLOAT> | t = <DOUBLE> | t = <SIGNED> |
 	t = <UNSIGNED> | t = <BOOL_TYPE> | t = <CODE> | t = <UNDEFINED_TYPE> )
 	{
-		jjtThis.setValue(t.image);
+		jjtThis.image = t.image;
 	}
 }
 
@@ -192,7 +193,7 @@ void TypeQualifier() #StringToken :
 {
 	( t = <CONST> | t = <VOLATILE> )
 	{
-		jjtThis.setValue(t.image);
+		jjtThis.image = t.image;
 	}
 }
 
@@ -329,11 +330,17 @@ void SelectionStatement() : {}
 	<SWITCH> "(" Expression() ")" Statement() )
 }
 
-void IterationStatement() : {}
+void IterationStatement() :
 {
-	( <WHILE> "(" Expression() ")" Statement() |
-	<DO> Statement() <WHILE> "(" Expression() ")" ";" |
-	<FOR> "(" [ Expression() ] ";" [ Expression() ] ";" [ Expression() ] ")" Statement() )
+	int choice = 0;
+}
+{
+	( <WHILE> "(" Expression() ")" Statement() { choice = 1; } |
+	<DO> Statement() <WHILE> "(" Expression() ")" ";" { choice = 2; } |
+	<FOR> "(" [ Expression() ] ";" [ Expression() ] ";" [ Expression() ] ")" Statement() { choice = 3; } )
+	{
+		jjtThis.choice = choice;
+	}
 }
 
 void JumpStatement() : {}
@@ -362,7 +369,7 @@ void AssignmentOperator() #StringToken :
 {
 	( t = "=" | t = "*=" | t = "/=" | t = "%=" | t = "+=" | t = "-=" | t = "<<=" | t = ">>=" | t = "&=" | t = "^=" | t = "|=" )
 	{
-		jjtThis.setValue(t.image);
+		jjtThis.image = t.image;
 	}
 }
 
@@ -408,7 +415,7 @@ void EqualityExpression() : {}
 
 void RelationalExpression() : {}
 {
-	ShiftExpression() [ ( "<" | ">" | "<=" | ">=" ) RelationalExpression() ]
+	ShiftExpression() [( "<" | ">" | "<=" | ">=" ) RelationalExpression()]
 }
 
 void ShiftExpression() : {}
@@ -428,7 +435,7 @@ void AdditionOperator() #StringToken :
 {
 	( t = "+" | t = "-" )
 	{
-		jjtThis.setValue(t.image);
+		jjtThis.image = t.image;
 	}
 }
 
@@ -489,15 +496,15 @@ ASTStringToken Identifier() #StringToken :
 	Token r = null;
 	ASTStringToken t = null;
 	Token s = null;
-	int choice;
+	int choice = 0;
 }
 {
-	(LOOKAHEAD(<IDENTIFIER>) r = <IDENTIFIER> { choice = 0; } | [ r = <IDENTIFIER> ] "<" t = Identifier() ">" [ s = <IDENTIFIER> ] { choice = 1; })
+	(LOOKAHEAD(<IDENTIFIER>) r = <IDENTIFIER> { choice = 1; } | [ r = <IDENTIFIER> ] "<" t = Identifier() ">" [ s = <IDENTIFIER> ] { choice = 2; })
 	{
-		if (choice == 1) {
-			jjtThis.setValue((r != null ? r.image : "") + "<" + t.getValue() + ">" + (s != null ? s.image : ""));
-		} else {
-			jjtThis.setValue(r.image);
+		if (choice == 2) {
+			jjtThis.image = (r != null ? r.image : "") + "<" + t.image + ">" + (s != null ? s.image : "");
+		} else if (choice == 1) {
+			jjtThis.image = r.image;
 		}
 
 		return jjtThis;
@@ -511,6 +518,6 @@ void Constant() #StringToken :
 {
 	(t = <INTEGER_LITERAL> | t = <FLOATING_POINT_LITERAL> | t = <CHARACTER_LITERAL> | t = <STRING_LITERAL> | t = <BOOLEAN>)
 	{
-		jjtThis.setValue(t.image);
+		jjtThis.image = t.image;
 	}
 }
