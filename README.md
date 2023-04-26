@@ -38,7 +38,7 @@ This is a work-in-progress feature as of now. It requires parsing the decompiled
 
 The decompiler panel can be accessed by clicking `GhidRust -> Open decompiler`. It looks as follows.
 
-![](./media/return_0.png)
+![](./media/decomp_muladd.png)
 
 ## Building
 

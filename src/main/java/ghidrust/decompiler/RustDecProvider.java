@@ -24,7 +24,7 @@ import java.awt.event.ActionEvent;
 import docking.ComponentProvider;
 import ghidra.util.task.ConsoleTaskMonitor;
 import resources.ResourceManager;
-
+import ghidrust.decompiler.parser.c.CFormatter;
 import ghidrust.decompiler.parser.c.gen.CParser;
 
 public class RustDecProvider extends ComponentProvider {
@@ -136,7 +136,7 @@ public class RustDecProvider extends ComponentProvider {
         String rust_code = "";
 
         try {
-            rust_code = CParser.transpile(decompiled);
+            rust_code = CFormatter.format(CParser.transpile(decompiled));
         } catch (Exception e) {
             rust_code = "/* [!] Failed to transpile " + func.getName() + " */\n" + decompiled;
         }
