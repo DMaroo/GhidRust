@@ -278,7 +278,7 @@ public class CVisitor implements CParserVisitor {
 
     public Object visit(ASTSelectionStatement node, Object data) {
         StringBuilder ret = new StringBuilder(
-                "if (" + node.jjtGetChild(0).jjtAccept(this, data) + ") {" + node.jjtGetChild(1).jjtAccept(this, data));
+                "if " + node.jjtGetChild(0).jjtAccept(this, data) + " {" + node.jjtGetChild(1).jjtAccept(this, data));
         ret.append("}");
         ((CContext) data).statement_end_sc = false;
         return ret;
