@@ -20,9 +20,9 @@ import ghidra.app.services.AbstractAnalyzer;
 import ghidra.app.services.AnalysisPriority;
 import ghidra.app.services.AnalyzerType;
 import ghidra.app.util.importer.MessageLog;
+import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressSetView;
 import ghidra.program.model.listing.Program;
-import ghidra.program.model.mem.MemoryBlock;
 import ghidra.util.exception.CancelledException;
 import ghidra.util.task.TaskMonitor;
 import ghidra.feature.fid.db.FidFileManager;
@@ -62,49 +62,6 @@ public class RustStdAnalyzer extends AbstractAnalyzer {
         } catch (IOException exc) {
             // pass
         }
-    }
-
-    private static boolean contains(byte[] hay, byte[] needle) {
-        if (hay.length < needle.length) {
-            return false;
-        }
-
-        for (int i = 0; i <= hay.length - needle.length; i++) {
-            int match_len = 0;
-            for (int j = 0; j < needle.length; j++) {
-                if (needle[j] == hay[i + j]) {
-                    match_len++;
-                } else {
-                    break;
-                }
-            }
-            if (match_len == needle.length) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    static private boolean getNextChunk(InputStream stream, byte[] dest, int size) {
-        byte end;
-
-        try {
-            if (stream.available() <= 0) {
-                return false;
-            }
-
-            end = (byte) stream.read();
-        } catch (IOException exc) {
-            return false;
-        }
-
-        for (int i = 0; i < size - 1; i++) {
-            dest[i] = dest[i + 1];
-        }
-
-        dest[size - 1] = end;
-        return true;
     }
 
     @Override
@@ -170,49 +127,13 @@ public class RustStdAnalyzer extends AbstractAnalyzer {
          * https://github.com/mandiant/capa-rules/blob/master/compiler/rust/compiled-
          * with-rust.yml
          */
-
-        /* We know that the strings would be found in the .rodata section */
-        MemoryBlock rodata = program.getMemory().getBlock(".rodata");
-
-        InputStream stream = rodata.getData();
-
-        int search_len = 0;
-        for (byte[] artifact : rust_artifacts) {
-            int artifact_len = artifact.length;
-
-            if (artifact_len > search_len) {
-                search_len = artifact_len;
+        
+        Address start_search = program.getMinAddress();
+        for (byte[] search_string : rust_artifacts) {
+            Address found_addr = program.getMemory().findBytes(start_search, search_string, null, true, null);
+            if (found_addr != null) {
+                return true;
             }
-        }
-
-        int i = 0;
-        byte[] chunk = new byte[search_len];
-
-        try {
-            while (stream.available() > 0 && i < chunk.length) {
-                chunk[i] = (byte) stream.read();
-                i++;
-            }
-        } catch (IOException exc) {
-            return false;
-        }
-
-        try {
-            while (stream.available() > 0) {
-                if (!getNextChunk(stream, chunk, search_len)) {
-                    break;
-                }
-
-                for (byte[] artifact : rust_artifacts) {
-                    if (contains(chunk, artifact)) {
-                        /* This is a Rust binary */
-                        return true;
-                    }
-                }
-
-            }
-        } catch (IOException exc) {
-            return false;
         }
 
         return false;
