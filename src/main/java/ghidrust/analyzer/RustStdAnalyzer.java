@@ -28,14 +28,9 @@ import ghidra.util.task.TaskMonitor;
 import ghidra.feature.fid.db.FidFileManager;
 import ghidra.framework.Application;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 
 public class RustStdAnalyzer extends AbstractAnalyzer {
-    private static final String filePath = "/home/dhruv/Education/CS4900/Work/GhidRust/tmp/logs";
-    private static BufferedWriter writer;
     private static final byte[][] rust_artifacts = {
             "run with `RUST_BACKTRACE=1` environment variable".getBytes(),
             "called `Option::unwrap()` on a `None` value".getBytes(),
@@ -56,12 +51,6 @@ public class RustStdAnalyzer extends AbstractAnalyzer {
          * with our own Function ID databases.
          */
         setPriority(AnalysisPriority.FUNCTION_ID_ANALYSIS.before().before());
-
-        try {
-            writer = new BufferedWriter(new FileWriter(filePath, true));
-        } catch (IOException exc) {
-            // pass
-        }
     }
 
     @Override
@@ -112,12 +101,6 @@ public class RustStdAnalyzer extends AbstractAnalyzer {
     @Override
     public void analysisEnded(Program program) {
         super.analysisEnded(program);
-
-        try {
-            writer.close();
-        } catch (IOException exc) {
-            // pass
-        }
     }
 
     /* For exposing the Rust checking code */
@@ -127,7 +110,7 @@ public class RustStdAnalyzer extends AbstractAnalyzer {
          * https://github.com/mandiant/capa-rules/blob/master/compiler/rust/compiled-
          * with-rust.yml
          */
-        
+
         Address start_search = program.getMinAddress();
         for (byte[] search_string : rust_artifacts) {
             Address found_addr = program.getMemory().findBytes(start_search, search_string, null, true, null);
