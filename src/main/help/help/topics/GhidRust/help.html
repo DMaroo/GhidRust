@@ -11,9 +11,96 @@
 </head>
 
 <body>
-    <h1><a name="GhidRust_head"></a>GhidRust: Rust binary analysis extension</h1>
 
-    <p>// TODO documentation</p>
-</body>
+    <body>
+        <p align="center">
+            <img width="180" src="images/ghidrust.png" alt="GhidRust">
+        <h1 align="center">
+            GhidRust
+        </h1>
+        <h1 align="center"><a name="GhidRust_head"></a><a href="https://github.com/DMaroo/GhidRust">GhidRust</a>: Rust binary analysis extension</h1>
+        </p>
+        <p><strong>Status:</strong> Currently, the plugin is under extensive
+            development. It is far from maturity. But a working prototype can be
+            expected within a few weeks.</p>
+        <p><img src="images/extension_entry.png" /></p>
+        <h2 id="features">Features</h2>
+        <h3 id="rust-binary-detection">Rust binary detection</h3>
+        <p>The plugin can detect Rust binaries. To use the feature, click on
+            <code>GhidRust -&gt; Check if Rust binary</code>. It will show a popup
+            indicating whether it's a Rust binary or not.
+        </p>
+        <table>
+            <thead>
+                <tr class="header">
+                    <th style="text-align: center;">May not be a Rust binary</th>
+                    <th style="text-align: center;">May be a Rust binary</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="odd">
+                    <td style="text-align: center;"><img src="images/not_rust_bin.png" /></td>
+                    <td style="text-align: center;"><img src="images/rust_bin.png" /></td>
+                </tr>
+            </tbody>
+        </table>
+        <h3 id="function-id">Function ID</h3>
+        <p>The plugin also consists of <code>RustStdAnalyzer</code> which
+            analyzes Rust binaries and applies function signatures to the library
+            functions (Rust's <code>std</code>) found in the binary. This is done
+            using <code>.fidb</code> function ID database. A default database for
+            x86-64 and Rust version 1.58.1 has been provided.
+            This is useful when analyzing stripped Rust binaries.</p>
+        <table>
+            <thead>
+                <tr class="header">
+                    <th style="text-align: center;">Without Function ID</th>
+                    <th style="text-align: center;">With Function ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="odd">
+                    <td style="text-align: center;"><img src="images/without_fid.png" /></td>
+                    <td style="text-align: center;"><img src="images/with_fid.png" /></td>
+                </tr>
+            </tbody>
+        </table>
+        <p>The analyzer is enabled by default for Rust binaries, and it's name
+            in analyzer window is <em>"Detect Rust libstd functions"</em>.</p>
+        <p><img src="images/analyzer_entry.png" /></p>
+        <h3 id="decompilation">Decompilation</h3>
+        <p>This is a work-in-progress feature as of now. It requires parsing the
+            decompiled C code and then emitting the corresponding Rust code. Once
+            that is done, Rust macro support will also be added in the future.</p>
+        <p>The decompiler panel can be accessed by clicking
+            <code>GhidRust -&gt; Open decompiler</code>. It looks as follows.
+        </p>
+        <p><img src="images/decomp_muladd.png" /></p>
+        <h2 id="building">Building</h2>
+        <p>There is a build script provided (<code>build.sh</code>) which can
+            build and install the extension.</p>
+        <pre><code>$ ./build.sh -h
+        GhidRust install script
+        Usage: build.sh [-i | --install] -g GHIDRA_PATH
+        
+                -i | --install           Install the extension
+                -g | --ghidra            Path to Ghidra installation (usually /opt/ghidra)
+                -h | --help              Show usage/help</code></pre>
+        <p>You can build the extension using the following command.</p>
+        <pre><code>$ ./build.sh -g &lt;GHIDRA_INSTALL_DIR&gt;</code></pre>
+        <p>You can install it using the install flag as follows.</p>
+        <pre><code>./build.sh -ig &lt;GHIDRA_INSTALL_DIR&gt;</code></pre>
+        <h2 id="adding-it-to-ghidra">Adding it to Ghidra</h2>
+        <p>To add it to Ghidra, just click on
+            <code>File -&gt; Install Extensions...</code> and choose GhidRust there.
+            Once installed, you will have a <code>GhidRust</code> entry in the
+            Ghidra toolbar which can be used to invoke the plugin.
+        </p>
+        <p>You might need to activate it from the
+            <code>File -&gt; Configure...</code> menu. Choose the
+            <code>Miscellaneous</code> section, and click the checkbox beside
+            <em>RustDecPlugin</em>.
+        </p>
+    </body>
 
 </html>
