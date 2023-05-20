@@ -1,6 +1,6 @@
-package ghidrust.decompiler.parser.c;
+package ghidrust.decompiler.codegen.rust;
 
-public class CFormatter {
+public class RustFormatter {
     static int indent_level;
 
     static String indent(int level) {
@@ -13,7 +13,7 @@ public class CFormatter {
         return sb.toString();
     }
 
-    public CFormatter(int initial_indent) {
+    public RustFormatter(int initial_indent) {
         indent_level = 0;
     }
 

@@ -3,7 +3,7 @@ package ghidrust.decompiler;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Function;
-
+import ghidra.app.decompiler.ClangTokenGroup;
 import ghidra.app.decompiler.DecompInterface;
 import ghidra.app.decompiler.DecompileResults;
 
@@ -23,9 +23,9 @@ import java.awt.event.ActionEvent;
 
 import docking.ComponentProvider;
 import ghidra.util.task.ConsoleTaskMonitor;
+import ghidrust.decompiler.codegen.rust.RustFormatter;
+import ghidrust.decompiler.codegen.rust.RustGen;
 import resources.ResourceManager;
-import ghidrust.decompiler.parser.c.CFormatter;
-import ghidrust.decompiler.parser.c.gen.CParser;
 
 public class RustDecProvider extends ComponentProvider {
     private JPanel panel;
@@ -132,13 +132,14 @@ public class RustDecProvider extends ComponentProvider {
             return;
         }
 
-        String decompiled = results.getDecompiledFunction().getC();
+        ClangTokenGroup tokens = results.getCCodeMarkup();
+        String c_code = results.getDecompiledFunction().getC();
         String rust_code = "";
 
         try {
-            rust_code = CFormatter.format(CParser.transpile(decompiled));
+            rust_code = RustFormatter.format(RustGen.generate(tokens));
         } catch (Exception e) {
-            rust_code = "/* [!] Failed to transpile " + func.getName() + " */\n" + decompiled;
+            rust_code = "/* [!] Failed to transpile " + func.getName() + " */\n" + c_code;
         }
 
         code_area.setText(rust_code);
