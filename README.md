@@ -4,7 +4,7 @@
   <p align="center">GhidRust: Rust binary analysis extension for Ghidra</p>
 </p>
 
-**Status:** Currently, the plugin is under extensive development. It is far from maturity. But a working prototype can be expected within a few weeks.
+**Status:** Currently, the plugin is under extensive development. It is far from maturity. But a working prototype can be expected within some time. This is the branch of GhidRust to be used for Ghidra having version >=10.3.
 
 ![](./media/extension_entry.png)
 
