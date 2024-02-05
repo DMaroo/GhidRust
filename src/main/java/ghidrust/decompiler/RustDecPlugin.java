@@ -35,7 +35,7 @@ import docking.action.MenuData;
 @PluginInfo(
 	status = PluginStatus.STABLE,
 	packageName = "HELLO",
-	category = PluginCategoryNames.DECOMPILER,
+	category = PluginCategoryNames.ANALYSIS,
 	shortDescription = "Rust Decompiler",
 	description = "Decompile Rust binaries' assembly to Rust code",
     eventsConsumed = {
