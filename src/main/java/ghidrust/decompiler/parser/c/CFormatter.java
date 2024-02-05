@@ -1,7 +1,10 @@
 package ghidrust.decompiler.parser.c;
 
+/**
+ * Format decompiled code.
+ */
 public class CFormatter {
-    static int indent_level;
+    static int indentLevel;
 
     static String indent(int level) {
         StringBuffer sb = new StringBuffer("");
@@ -13,38 +16,44 @@ public class CFormatter {
         return sb.toString();
     }
 
-    public CFormatter(int initial_indent) {
-        indent_level = 0;
+    public CFormatter(int initialIndent) {
+        indentLevel = initialIndent;
     }
 
+    /**
+     * Format the code being passed in by adding newlines and semicolons.
+     *
+     * @param code Code as a string.
+     * @return Formatted code.
+     */
     public static String format(String code) {
         StringBuffer pretty = new StringBuffer("");
 
         int str_len = code.length();
-        pretty.append(indent(indent_level));
+        pretty.append(indent(indentLevel));
         boolean disable = false;
 
         for (int i = 0; i < str_len; i++) {
             if (code.charAt(i) == '{') {
                 pretty.append("{\n");
-                indent_level++;
-                pretty.append(indent(indent_level));
+                indentLevel++;
+                pretty.append(indent(indentLevel));
             } else if (code.charAt(i) == '}') {
-                indent_level--;
+                indentLevel--;
                 if (code.charAt(i - 1) != ';') {
                     pretty.append("\n");
-                    pretty.append(indent(indent_level));
+                    pretty.append(indent(indentLevel));
                 } else {
                     pretty.deleteCharAt(pretty.length() - 1);
                 }
                 pretty.append("}");
                 if (!(i + 1 < str_len && code.charAt(i + 1) == ' ')) {
                     pretty.append("\n");
-                    pretty.append(indent(indent_level));
+                    pretty.append(indent(indentLevel));
                 }
             } else if (code.charAt(i) == ';') {
                 pretty.append(";\n");
-                pretty.append(indent(indent_level));
+                pretty.append(indent(indentLevel));
             } else if (code.charAt(i) == '@') {
                 /* special character to denote no action for next char */
                 i++;

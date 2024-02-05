@@ -13,12 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package ghidrust.decompiler;
 
+import ghidra.app.events.ProgramActivatedPluginEvent;
+import ghidra.app.events.ProgramClosedPluginEvent;
+import ghidra.app.events.ProgramLocationPluginEvent;
 import ghidra.app.plugin.PluginCategoryNames;
-import docking.ActionContext;
+import ghidra.app.DeveloperPluginPackage;
+
 import docking.action.DockingAction;
-import ghidra.app.events.*;
+import docking.action.MenuData;
+import docking.ActionContext;
+
 import ghidra.framework.plugintool.Plugin;
 import ghidra.framework.plugintool.PluginInfo;
 import ghidra.framework.plugintool.PluginTool;
@@ -29,39 +36,51 @@ import ghidra.program.model.listing.Program;
 import ghidra.program.util.ProgramLocation;
 import ghidra.util.Msg;
 import ghidrust.analyzer.RustStdAnalyzer;
-import docking.action.MenuData;
 
-//@formatter:off
+// @formatter:off
+/**
+ * Add the PluginInfo annotation for the Rust decompiler plugin.
+ */
 @PluginInfo(
-	status = PluginStatus.STABLE,
-	packageName = "HELLO",
-	category = PluginCategoryNames.ANALYSIS,
-	shortDescription = "Rust Decompiler",
-	description = "Decompile Rust binaries' assembly to Rust code",
+    status = PluginStatus.STABLE,
+    packageName = DeveloperPluginPackage.NAME,
+    category = PluginCategoryNames.ANALYSIS,
+    shortDescription = "Rust Decompiler",
+    description = "Decompile Rust binaries' assembly to Rust code",
     eventsConsumed = {
-		ProgramActivatedPluginEvent.class, ProgramLocationPluginEvent.class, ProgramClosedPluginEvent.class
-	}
+        ProgramActivatedPluginEvent.class,
+        ProgramLocationPluginEvent.class,
+        ProgramClosedPluginEvent.class
+    }
 )
-//@formatter:on
+// @formatter:on
+
 public class RustDecPlugin extends Plugin {
     Program program;
     RustDecProvider provider;
 
+    /**
+     * Adds docking actions for opening the decompiler and checking whether the
+     * binary is a Rust binary.
+     *
+     * @param tool PluginTool instance responsible for managing RustDecPlugin.
+     */
     public RustDecPlugin(PluginTool tool) {
         super(tool);
         provider = new RustDecProvider(this, getName(), null);
 
-        DockingAction dec_plugin = new DockingAction("GhidRust", getName()) {
+        DockingAction decPlugin = new DockingAction("GhidRust", getName()) {
             @Override
             public void actionPerformed(ActionContext context) {
-                provider.activateProvider();;
+                provider.activateProvider();
+                ;
             }
         };
 
-        dec_plugin.setEnabled(true);
-        dec_plugin.setMenuBarData(new MenuData(new String[] { "GhidRust", "Open decompiler" }));
+        decPlugin.setEnabled(true);
+        decPlugin.setMenuBarData(new MenuData(new String[] { "GhidRust", "Open decompiler" }));
 
-        DockingAction check_plugin = new DockingAction("GhidRust", getName()) {
+        DockingAction checkPlugin = new DockingAction("GhidRust", getName()) {
             @Override
             public void actionPerformed(ActionContext context) {
                 if (RustStdAnalyzer.isRustBinary(program)) {
@@ -72,11 +91,13 @@ public class RustDecPlugin extends Plugin {
             }
         };
 
-        check_plugin.setEnabled(true);
-        check_plugin.setMenuBarData(new MenuData(new String[] { "GhidRust", "Check if Rust binary" }));
+        checkPlugin.setEnabled(true);
+        checkPlugin.setMenuBarData(new MenuData(
+            new String[] { "GhidRust", "Check if Rust binary" }
+        ));
 
-        tool.addAction(dec_plugin);
-        tool.addAction(check_plugin);
+        tool.addAction(decPlugin);
+        tool.addAction(checkPlugin);
     }
 
     @Override

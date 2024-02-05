@@ -6,6 +6,8 @@ import ghidra.program.model.listing.Function;
 
 import ghidra.app.decompiler.DecompInterface;
 import ghidra.app.decompiler.DecompileResults;
+import ghidrust.decompiler.parser.c.CFormatter;
+import ghidrust.decompiler.parser.c.gen.CParser;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -24,26 +26,35 @@ import java.awt.event.ActionEvent;
 import docking.ComponentProvider;
 import ghidra.util.task.ConsoleTaskMonitor;
 import resources.ResourceManager;
-import ghidrust.decompiler.parser.c.CFormatter;
-import ghidrust.decompiler.parser.c.gen.CParser;
 
+/**
+ * Responsible for decompiling and showing the decompiled code in a window.
+ */
 public class RustDecProvider extends ComponentProvider {
     private JPanel panel;
-    private JTextArea code_area;
-    private JLabel func_title;
+    private JTextArea codeArea;
+    private JLabel funcTitle;
 
     private Program prog;
     private Address addr;
 
-    private DecompInterface decomp_ifc = null;
+    private DecompInterface decompInterface = null;
 
     private static final String EMPTY_LABEL = "<none>";
 
+    /**
+     * Initialize the provider by creating a decompilation interface and the
+     * decompilation window.
+     *
+     * @param plugin Calling plugin, which in our case would be RustDecPlugin.
+     * @param owner Owner of the plugin.
+     * @param p Program on which this plugin is being used.
+     */
     public RustDecProvider(RustDecPlugin plugin, String owner, Program p) {
         super(plugin.getTool(), owner, owner);
         setIcon(ResourceManager.loadImage("images/icon.png"));
 
-        decomp_ifc = new DecompInterface();
+        decompInterface = new DecompInterface();
         setProgram(p);
 
         buildPanel();
@@ -57,7 +68,7 @@ public class RustDecProvider extends ComponentProvider {
     private void buildPanel() {
         panel = new JPanel(new BorderLayout());
 
-        func_title = new JLabel(EMPTY_LABEL);
+        funcTitle = new JLabel(EMPTY_LABEL);
         JButton reload = new JButton(ResourceManager.loadImage("images/reload.png"));
 
         reload.addActionListener(new ActionListener() {
@@ -68,14 +79,14 @@ public class RustDecProvider extends ComponentProvider {
 
         JToolBar toolbar = new JToolBar("GhidRust", JToolBar.HORIZONTAL);
         toolbar.setFloatable(false);
-        toolbar.add(func_title);
+        toolbar.add(funcTitle);
         toolbar.add(Box.createHorizontalGlue());
         toolbar.add(reload);
 
-        code_area = new JTextArea();
-        code_area.setEditable(false);
+        codeArea = new JTextArea();
+        codeArea.setEditable(false);
 
-        JScrollPane scroll = new JScrollPane(code_area);
+        JScrollPane scroll = new JScrollPane(codeArea);
         scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         panel.add(toolbar, BorderLayout.PAGE_START);
@@ -86,12 +97,18 @@ public class RustDecProvider extends ComponentProvider {
         setVisible(true);
     }
 
+    /**
+     * We save the program in a private class variable to be used later, and
+     * open it using the decompiler interface.
+     *
+     * @param p program to be decompiled.
+     */
     public void setProgram(Program p) {
         prog = p;
 
-        decomp_ifc.closeProgram();
+        decompInterface.closeProgram();
         if (prog != null) {
-            decomp_ifc.openProgram(prog);
+            decompInterface.openProgram(prog);
         }
     }
 
@@ -99,48 +116,54 @@ public class RustDecProvider extends ComponentProvider {
         addr = a;
     }
 
+    /**
+     * When reload is called, we trigger the decompilation.
+     */
     public void reload() {
         if (prog == null) {
-            func_title.setText(EMPTY_LABEL);
-            code_area.setText("[?] Open a program to see the decompilation!\n");
+            funcTitle.setText(EMPTY_LABEL);
+            codeArea.setText("[?] Open a program to see the decompilation!\n");
             return;
         }
 
         if (addr == null) {
-            func_title.setText(EMPTY_LABEL);
-            code_area.setText("[?] Select a memory location to decompile!\n");
+            funcTitle.setText(EMPTY_LABEL);
+            codeArea.setText("[?] Select a memory location to decompile!\n");
             return;
         }
 
         Function func = prog.getFunctionManager().getFunctionContaining(addr);
         if (func == null) {
-            func_title.setText(EMPTY_LABEL);
-            code_area.setText("[!] No function found at " + addr.toString() + "\n");
+            funcTitle.setText(EMPTY_LABEL);
+            codeArea.setText("[!] No function found at " + addr.toString() + "\n");
             return;
         }
 
-        func_title.setText(func.getName());
+        funcTitle.setText(func.getName());
 
-        if (decomp_ifc == null) {
-            code_area.setText("[!] Decompiler has not been initialized!\n");
+        if (decompInterface == null) {
+            codeArea.setText("[!] Decompiler has not been initialized!\n");
             return;
         }
 
-        DecompileResults results = decomp_ifc.decompileFunction(func, 0, new ConsoleTaskMonitor());
-        if (results == null || results.getDecompiledFunction() == null || results.getDecompiledFunction().getC() == null) {
-            code_area.setText("[!] Failed to decompile " + func.getName() + "\n");
+        DecompileResults results = decompInterface.decompileFunction(
+            func, 0, new ConsoleTaskMonitor()
+        );
+        if (results == null || results.getDecompiledFunction() == null
+            || results.getDecompiledFunction().getC() == null) {
+            codeArea.setText("[!] Failed to decompile " + func.getName() + "\n");
             return;
         }
 
         String decompiled = results.getDecompiledFunction().getC();
-        String rust_code = "";
+        String rustCode = "";
 
         try {
-            rust_code = CFormatter.format(CParser.transpile(decompiled));
+            rustCode = CFormatter.format(CParser.transpile(decompiled));
         } catch (Exception e) {
-            rust_code = "/* [!] Failed to transpile " + func.getName() + " */\n" + decompiled;
+            rustCode = "/* [!] Failed to transpile " + func.getName() + " */\n" + decompiled;
         }
 
-        code_area.setText(rust_code);
+        codeArea.setText(rustCode);
     }
 }

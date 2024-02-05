@@ -1,5 +1,6 @@
 package ghidrust.decompiler.parser.c;
 
+// CHECKSTYLE:OFF
 import ghidrust.decompiler.parser.c.gen.*;
 import java.util.HashMap;
 
@@ -453,6 +454,8 @@ public class CVisitor implements CParserVisitor {
         return defaultSpacedVisit(node, data, ", ", false);
     }
 }
+// CHECKSTYLE:ON
+
 /*
  * JavaCC - OriginalChecksum=fd39d82df2a1b516298b94d6f4a5e997 (do not edit this
  * line)
