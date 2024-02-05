@@ -4,7 +4,15 @@
   <p align="center">GhidRust: Rust binary analysis extension for Ghidra</p>
 </p>
 
-**Status:** Currently, the plugin is under extensive development. It is far from maturity. But a working prototype can be expected within a few weeks.
+**Status:** Development has been paused permanently. This plugin is in a partially usable condition. Few Rust binary analysis features have been upstreamed to Ghidra since the creation of this plugin.
+
+ - [GP-2412: Improved support for Rust binaries](https://github.com/NationalSecurityAgency/ghidra/commit/921247f640c9a313bce80dc26e0f99939ddae4ad)
+ - [GP-4158 adjust how DWARF handles Rust](https://github.com/NationalSecurityAgency/ghidra/commit/d9a900702e838ac639735fa783c342cc3b9ba76d)
+ - [GP-4103: Fixing issue with loading Mach-O Rust binaries](https://github.com/NationalSecurityAgency/ghidra/commit/9dd1a3fb109578b059ec2c2d5e5ee62d1ec1e67a)
+
+Ghidra's Rust binary identification is now superior to this plugin. The only other features which this plugin provides is that of FunctionID database integration and og transpiling the decompiled C code to Rust code. Both of these are quite flaky.
+
+I will still be happy to accept any patches or pull requests, but there won't be any active development. Feel free to fork this project or create a new one. Please let me know if you do so, I will be happy to add your project's link here as an alternative.
 
 ![](./media/extension_entry.png)
 
