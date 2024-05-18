@@ -10,7 +10,7 @@
  - [GP-4158 adjust how DWARF handles Rust](https://github.com/NationalSecurityAgency/ghidra/commit/d9a900702e838ac639735fa783c342cc3b9ba76d)
  - [GP-4103: Fixing issue with loading Mach-O Rust binaries](https://github.com/NationalSecurityAgency/ghidra/commit/9dd1a3fb109578b059ec2c2d5e5ee62d1ec1e67a)
 
-Ghidra's Rust binary identification is now superior to this plugin. The only other features which this plugin provides is that of FunctionID database integration and og transpiling the decompiled C code to Rust code. Both of these are quite flaky.
+Ghidra's Rust binary identification is now superior to this plugin. The only other features which this plugin provides is that of FunctionID database integration and of transpiling the decompiled C code to Rust code. Both of these are quite flaky.
 
 I will still be happy to accept any patches or pull requests, but there won't be any active development. Feel free to fork this project or create a new one. Please let me know if you do so, I will be happy to add your project's link here as an alternative.
 
@@ -79,3 +79,4 @@ You can install it using the install flag as follows.
 To add it to Ghidra, just click on `File -> Install Extensions...` and choose GhidRust there. Once installed, you will have a `GhidRust` entry in the Ghidra toolbar which can be used to invoke the plugin.
 
 You might need to activate it from the `File -> Configure...` menu. Choose the `Miscellaneous` section, and click the checkbox beside _RustDecPlugin_.
+
