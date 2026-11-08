@@ -107,7 +107,7 @@ public class RustStdAnalyzer extends AbstractAnalyzer {
 
         ResourceFile[] libs = dataDir.listFiles();
         for (ResourceFile lib : libs) {
-            monitor.checkCanceled();
+            monitor.checkCancelled();
             ffm.addUserFidFile(lib.getFile(true));
         }
 
